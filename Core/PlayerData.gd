@@ -10,6 +10,7 @@ var account_exp: int = 0
 var exp_to_next_level: int = 100
 # 🪙 貨幣（如果有的話）
 var gold: int = 0
+var talent_points: int = 0
 # 🏁 玩家目前的生涯進度
 var total_flags: int = 0
 var unlocked_chapters = ["chapter_1"] # 一開始只解鎖第一章
@@ -115,6 +116,7 @@ func create_save_dictionary() -> Dictionary:
 		"exp_to_next_level": exp_to_next_level,
 		"total_flags": total_flags,
 		"gold": gold,
+		"talent_points": talent_points,
 		"talents": talents,
 		"unlocked_chapters": unlocked_chapters,
 		"flags_data": {}
@@ -169,6 +171,7 @@ func load_game() -> void:
 			unlocked_chapters = data.get("unlocked_chapters", ["chapter_1"])
 			talents = data.get("talents", talents)
 			gold = data.get("gold", 0)
+			talent_points = data.get("talent_points", 0)
 			# 🟢 安全、動態的關卡還原邏輯
 			var flags_data = data.get("flags_data", {})
 			for lvl_id in flags_data.keys():
@@ -206,13 +209,13 @@ func gain_exp(amount: int):
 func level_up():
 	account_exp -= exp_to_next_level
 	account_level += 1
-	exp_to_next_level = int(exp_to_next_level * 1.5) # 下一級需要更多經驗
-	print("🎉 恭喜升級！目前等級：", account_level)
-	# 🎯 呼叫 HUD 跳出全滿升級通知！
+	exp_to_next_level = int(exp_to_next_level * 1.5)
+	talent_points += 1
+	print("🎉 恭喜升級！目前等級：", account_level, " 獲得 1 點天賦點數")
 	var hud = get_tree().get_first_node_in_group("hud")
 	if hud:
 		hud.show_notification("🎉🎉 LEVEL UP! 目前等級: " + str(account_level) + " 🎉🎉", Color.GREEN)
-		
-	save_game()                  # 💾 升級完順便存檔！
+
+	save_game()
 	
 	

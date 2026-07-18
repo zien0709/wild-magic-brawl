@@ -41,7 +41,14 @@ theme_override_colors/font_color = Color(1, 0, 0, 1)
 theme_override_font_sizes/font_size = 64
 text = "離開遊戲"
 
+[node name="TalentButton" type="Button" parent="VBoxContainer" unique_id=1258331805]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.8, 0.3, 1)
+theme_override_font_sizes/font_size = 48
+text = "天賦樹"
+
 [node name="Camera2D" type="Camera2D" parent="." unique_id=606570002]
 
 [connection signal="pressed" from="VBoxContainer/StartButton" to="." method="_on_start_button_pressed"]
 [connection signal="pressed" from="VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/TalentButton" to="." method="_on_talent_button_pressed"]

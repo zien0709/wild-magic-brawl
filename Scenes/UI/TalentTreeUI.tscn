@@ -1,0 +1,20 @@
+[gd_scene format=3 uid="uid://ddxb6l5ftldo6"]
+
+[ext_resource type="Script" uid="uid://cdjluloq1ywi8" path="res://Scenes/UI/TalentTreeUI.gd" id="1_1"]
+
+[node name="TalentTreeUI" type="Control" unique_id=1594307321]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 300.0
+offset_bottom = 400.0
+script = ExtResource("1_1")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=381430015]
+layout_mode = 0
+
+[node name="PointsLabel" type="Label" parent="VBoxContainer" unique_id=600156022]
+layout_mode = 2
+text = "可用天賦點數: 0"
+
+[node name="TalentList" type="VBoxContainer" parent="VBoxContainer" unique_id=682843767]
+layout_mode = 2

@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://cevg5qovdkaus"]
+
+[ext_resource type="Script" uid="uid://cy46jqophgt2a" path="res://Entities/Environment/SurroundedChest.gd" id="1_4dxnh"]
+[ext_resource type="PackedScene" uid="uid://bx2y2c40vfqve" path="res://Entities/Enemy/Enemy.tscn" id="2_vtgpm"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_vtgpm"]
+radius = 100.0
+
+[node name="SurroundedChest" type="Area2D" unique_id=896617914]
+script = ExtResource("1_4dxnh")
+enemy_scene = ExtResource("2_vtgpm")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1669973163]
+shape = SubResource("CircleShape2D_vtgpm")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1938675325]

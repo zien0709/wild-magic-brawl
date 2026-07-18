@@ -5,6 +5,12 @@
 
 [resource]
 script = ExtResource("2_5n70o")
-map_path = "res://Scenes/Maps/Map_Level_1_1.tscn"
+map_path = "res://Scenes/Maps/Map_Level_1_2.tscn"
+mode_type = "PORTAL"
 enemy_list = Array[PackedScene]([ExtResource("1_e63si")])
+max_spawn_count = 20
+extra_params = {
+"portal_speed": 200.0,
+"target_kills": 10
+}
 metadata/_custom_type_script = "uid://3p2ctg5iemu1"

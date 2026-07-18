@@ -25,7 +25,6 @@ config/icon="uid://tbhn50hnyps7"
 PlayerData="*uid://cailry3dfvuvu"
 LevelManager="*uid://cbwdykjc5x5uv"
 GameEvents="*uid://bktw8yxppx1eo"
-HSessions="*uid://bieh2rxxahuu2"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [dotnet]
