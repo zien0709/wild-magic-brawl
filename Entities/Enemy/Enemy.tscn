@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://bx2y2c40vfqve"]
+
+[ext_resource type="Script" uid="uid://vhgr6uq5uu3i" path="res://Entities/Enemy/enemy.gd" id="1_s7bn3"]
+[ext_resource type="Texture2D" uid="uid://tbhn50hnyps7" path="res://Assets/Textures/icon.svg" id="1_tt7e2"]
+[ext_resource type="Script" uid="uid://dp483i6spgalq" path="res://Entities/Combat/Hurtbox.gd" id="3_e6d4v"]
+[ext_resource type="Script" uid="uid://ddprm7g7u163s" path="res://Entities/Combat/Hitbox.gd" id="4_qp131"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s7bn3"]
+size = Vector2(117, 120)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2hac7"]
+size = Vector2(133, 130)
+
+[node name="Enemy" type="CharacterBody2D" unique_id=1860421889 groups=["enemies"]]
+collision_layer = 64
+collision_mask = 3
+slide_on_ceiling = false
+script = ExtResource("1_s7bn3")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1602560572]
+modulate = Color(1, 0, 0, 1)
+visibility_layer = 3
+texture = ExtResource("1_tt7e2")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1393576613]
+position = Vector2(-0.5, -1)
+shape = SubResource("RectangleShape2D_s7bn3")
+
+[node name="EnemyHurtbox" type="Area2D" parent="." unique_id=20798227]
+collision_layer = 8
+collision_mask = 16
+script = ExtResource("3_e6d4v")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyHurtbox" unique_id=1223806187]
+position = Vector2(-3, -1)
+shape = SubResource("RectangleShape2D_2hac7")
+
+[node name="EnemyHitbox" type="Area2D" parent="." unique_id=2094155021]
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("4_qp131")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyHitbox" unique_id=1584312719]
+position = Vector2(0.5, 0)
+shape = SubResource("RectangleShape2D_2hac7")
+
+[node name="EnemyHealthBar" type="ProgressBar" parent="." unique_id=865707504]
+modulate = Color(0, 1, 0, 1)
+offset_left = -80.0
+offset_top = -119.0
+offset_right = 81.0
+offset_bottom = -86.0
+show_percentage = false
+
+[connection signal="on_hit" from="EnemyHurtbox" to="." method="_on_enemy_hurtbox_on_hit"]

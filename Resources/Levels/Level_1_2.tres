@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LevelData" format=3 uid="uid://2qcoq6vllo2j"]
+
+[ext_resource type="PackedScene" uid="uid://bx2y2c40vfqve" path="res://Entities/Enemy/Enemy.tscn" id="1_e63si"]
+[ext_resource type="Script" uid="uid://3p2ctg5iemu1" path="res://Scripts/Resources/LevelData.gd" id="2_5n70o"]
+
+[resource]
+script = ExtResource("2_5n70o")
+map_path = "res://Scenes/Maps/Map_Level_1_1.tscn"
+enemy_list = Array[PackedScene]([ExtResource("1_e63si")])
+metadata/_custom_type_script = "uid://3p2ctg5iemu1"

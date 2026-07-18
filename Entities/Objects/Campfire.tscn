@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://cvbe01nrgnfel"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_ypqe2"]
+radius = 11.045361
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_1c75a"]
+lifetime_randomness = 1.0
+particle_flag_disable_z = true
+emission_shape = 1
+emission_sphere_radius = 27.5
+angle_min = -356.1
+angle_max = 371.6
+gravity = Vector3(0, -98, 0)
+color = Color(0.937086, 0.24872687, 0, 1)
+anim_speed_min = 1.36
+anim_speed_max = 7.8399997
+
+[node name="Campfire" type="StaticBody2D" unique_id=1249805313]
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=401983778]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1861578328]
+shape = SubResource("CircleShape2D_ypqe2")
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="." unique_id=1135499918]
+amount = 600
+amount_ratio = 0.99
+process_material = SubResource("ParticleProcessMaterial_1c75a")

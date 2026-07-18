@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://dnvmk22agx13f"]
+
+[ext_resource type="Script" uid="uid://blcstflwto7tn" path="res://Scenes/Menus/Main_Menu.gd" id="1_v3fht"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_i26rj"]
+
+[node name="MainMenu" type="Control" unique_id=1101610459]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_v3fht")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1079096752]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -68.0
+offset_top = -68.5
+offset_right = 68.0
+offset_bottom = 68.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=629760169]
+layout_mode = 2
+text = "荒野魔法亂鬥"
+label_settings = SubResource("LabelSettings_i26rj")
+horizontal_alignment = 3
+
+[node name="StartButton" type="Button" parent="VBoxContainer" unique_id=1135145657]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.52156866, 0, 1, 1)
+theme_override_font_sizes/font_size = 64
+text = "開始遊戲"
+
+[node name="QuitButton" type="Button" parent="VBoxContainer" unique_id=398483369]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_font_sizes/font_size = 64
+text = "離開遊戲"
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=606570002]
+
+[connection signal="pressed" from="VBoxContainer/StartButton" to="." method="_on_start_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/QuitButton" to="." method="_on_quit_button_pressed"]

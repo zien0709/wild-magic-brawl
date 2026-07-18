@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://c51c3p8wh5m2s"]
+
+[ext_resource type="Script" path="res://UI/EnergyBar.gd" id="1_1"]
+
+[node name="EnergyBar" type="ProgressBar"]
+offset_right = 200.0
+offset_bottom = 27.0
+script = ExtResource("1_1")

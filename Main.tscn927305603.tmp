@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://dr1sudrshmrfk"]
+
+[ext_resource type="PackedScene" uid="uid://cp7ehl3aly72j" path="res://Level_01.tscn" id="1_cm0pq"]
+[ext_resource type="PackedScene" uid="uid://b7y7sawangku3" path="res://Player.tscn" id="1_glv2v"]
+[ext_resource type="Script" uid="uid://cie0djrsk2j4a" path="res://enemy_spawner.gd" id="2_uu6xs"]
+[ext_resource type="PackedScene" uid="uid://bx2y2c40vfqve" path="res://Enemy.tscn" id="3_r0du0"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_r0du0"]
+bg_color = Color(0.88235295, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cm0pq"]
+bg_color = Color(1, 0, 0, 1)
+
+[node name="Main" type="Node2D" unique_id=343259521]
+metadata/_edit_horizontal_guides_ = [2049.0]
+
+[node name="MapGround" parent="." unique_id=524313651 instance=ExtResource("1_cm0pq")]
+
+[node name="Player" parent="." unique_id=839079120 instance=ExtResource("1_glv2v")]
+position = Vector2(134, 133)
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=638284511]
+
+[node name="EnemySpawner" type="Node2D" parent="." unique_id=113052069]
+script = ExtResource("2_uu6xs")
+enemy_scene = ExtResource("3_r0du0")
+
+[node name="Timer" type="Timer" parent="EnemySpawner" unique_id=1568804101]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=1177945342]
+
+[node name="PlayerHealthBar" type="ProgressBar" parent="CanvasLayer" unique_id=260229451]
+clip_contents = true
+offset_right = 87.0
+offset_bottom = 32.0
+theme_override_styles/background = SubResource("StyleBoxFlat_r0du0")
+theme_override_styles/fill = SubResource("StyleBoxFlat_cm0pq")
+show_percentage = false
+metadata/_edit_use_anchors_ = true
+
+[node name="DashEnergyBar" type="ProgressBar" parent="CanvasLayer" unique_id=525009529]
+offset_top = 33.0
+offset_right = 52.0
+offset_bottom = 60.0
+metadata/_edit_use_anchors_ = true

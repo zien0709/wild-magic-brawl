@@ -1,0 +1,52 @@
+[gd_scene format=3 uid="uid://b7y7sawangku3"]
+
+[ext_resource type="Script" uid="uid://d3nfoa7snffd8" path="res://Entities/Player/player.gd" id="1_kpjcp"]
+[ext_resource type="Texture2D" uid="uid://tbhn50hnyps7" path="res://Assets/Textures/icon.svg" id="1_xhfnw"]
+[ext_resource type="Script" uid="uid://dimgg7nham532" path="res://Entities/Combat/WeaponHandler.gd" id="3_e80uo"]
+[ext_resource type="Resource" uid="uid://dnes3fons043x" path="res://Resources/Weapons/Pistol.tres" id="4_e80uo"]
+[ext_resource type="Texture2D" uid="uid://dv5038kojdji" path="res://Assets/Textures/weapon_1.png" id="5_dtqjt"]
+[ext_resource type="Script" uid="uid://dp483i6spgalq" path="res://Entities/Combat/Hurtbox.gd" id="6_tdg3f"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kpjcp"]
+size = Vector2(122, 123)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_cxr5p"]
+size = Vector2(131, 129)
+
+[node name="Player" type="CharacterBody2D" unique_id=839079120 groups=["player"]]
+collision_layer = 2
+collision_mask = 65
+script = ExtResource("1_kpjcp")
+dash_duration = 0.5
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1114719608]
+texture = ExtResource("1_xhfnw")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=166591985]
+position = Vector2(-2, -0.5)
+shape = SubResource("RectangleShape2D_kpjcp")
+
+[node name="WeaponHandler" type="Node2D" parent="." unique_id=148635395]
+script = ExtResource("3_e80uo")
+data = ExtResource("4_e80uo")
+
+[node name="WeaponSprite" type="Sprite2D" parent="WeaponHandler" unique_id=1835183617]
+position = Vector2(78, 9)
+texture = ExtResource("5_dtqjt")
+offset = Vector2(15, 0)
+
+[node name="Muzzle" type="Marker2D" parent="WeaponHandler/WeaponSprite" unique_id=265351326]
+position = Vector2(60, -1)
+
+[node name="PlayerHurtbox" type="Area2D" parent="." unique_id=1191024798]
+collision_layer = 4
+collision_mask = 32
+script = ExtResource("6_tdg3f")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerHurtbox" unique_id=361694182]
+position = Vector2(-1.5, -0.5)
+shape = SubResource("RectangleShape2D_cxr5p")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=478987689]
+
+[connection signal="on_hit" from="PlayerHurtbox" to="." method="_on_player_hurtbox_on_hit"]

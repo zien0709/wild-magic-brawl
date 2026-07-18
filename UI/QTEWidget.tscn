@@ -1,0 +1,46 @@
+[gd_scene load_steps=2 format=3 uid="uid://d1g27s3j1k8uh"]
+
+[ext_resource type="Script" path="res://UI/QTEWidget.gd" id="1_1"]
+
+[node name="QTEWidget" type="Control"]
+custom_minimum_size = Vector2(200, 30)
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -15.0
+offset_right = 100.0
+offset_bottom = 15.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_1")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.156863, 0.156863, 0.156863, 0.815686)
+
+[node name="TargetArea" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 60.0
+offset_bottom = 30.0
+color = Color(0.180392, 0.603922, 0.180392, 0.588235)
+
+[node name="PerfectArea" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 20.0
+offset_bottom = 30.0
+color = Color(0.811765, 0.607843, 0.0980392, 0.823529)
+
+[node name="Pointer" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 4.0
+offset_bottom = 30.0
+color = Color(0.92549, 0.117647, 0.117647, 1)

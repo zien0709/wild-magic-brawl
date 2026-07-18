@@ -1,0 +1,72 @@
+[gd_scene format=3 uid="uid://okkhu5k7wsom"]
+
+[ext_resource type="Script" uid="uid://df5umh3u37gk7" path="res://Scenes/UI/GameHUD.gd" id="1_315wm"]
+[ext_resource type="Texture2D" uid="uid://dv5038kojdji" path="res://Assets/Textures/weapon_1.png" id="2_cg26j"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_315wm"]
+bg_color = Color(0.88235295, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8yvrw"]
+bg_color = Color(1, 0, 0, 1)
+
+[node name="GameHUD" type="CanvasLayer" unique_id=1661340227 groups=["hud"]]
+script = ExtResource("1_315wm")
+
+[node name="PlayerHealthBar" type="ProgressBar" parent="." unique_id=1988372393]
+clip_contents = true
+anchors_preset = -1
+anchor_left = 0.9392361
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -87.0
+offset_top = -32.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/background = SubResource("StyleBoxFlat_315wm")
+theme_override_styles/fill = SubResource("StyleBoxFlat_8yvrw")
+show_percentage = false
+
+[node name="DashEnergyBar" type="ProgressBar" parent="." unique_id=1527655165]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -53.0
+offset_top = -57.0
+offset_right = -1.0
+offset_bottom = -30.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="LeftTopContainer" type="Control" parent="." unique_id=207250822]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="NotificationBox" type="VBoxContainer" parent="LeftTopContainer" unique_id=26487188]
+layout_mode = 0
+offset_top = 102.0
+offset_right = 40.0
+offset_bottom = 109.0
+
+[node name="RightTopContainer" type="MarginContainer" parent="." unique_id=1908315472]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -105.0
+offset_bottom = 40.0
+grow_horizontal = 0
+
+[node name="WeaponHUD" type="MarginContainer" parent="RightTopContainer" unique_id=1797415308]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="RightTopContainer/WeaponHUD" unique_id=1238898211]
+layout_mode = 2
+
+[node name="WeaponIcon" type="TextureRect" parent="RightTopContainer/WeaponHUD/HBoxContainer" unique_id=1992044114]
+layout_mode = 2
+texture = ExtResource("2_cg26j")
+
+[node name="AmmoLabel" type="Label" parent="RightTopContainer/WeaponHUD/HBoxContainer" unique_id=174974914]
+layout_mode = 2
