@@ -1,0 +1,56 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://Entities/Enemy/RangedEnemy.gd" id="1_rescr"]
+[ext_resource type="Texture2D" uid="uid://tbhn50hnyps7" path="res://Assets/Textures/icon.svg" id="2_texture"]
+[ext_resource type="Script" uid="uid://dp483i6spgalq" path="res://Entities/Combat/Hurtbox.gd" id="3_hurtbox"]
+[ext_resource type="Script" uid="uid://ddprm7g7u163s" path="res://Entities/Combat/Hitbox.gd" id="4_hitbox"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_resize"]
+size = Vector2(100, 100)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hurt"]
+size = Vector2(110, 110)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_hit"]
+size = Vector2(80, 80)
+
+[node name="RangedEnemy" type="CharacterBody2D" groups=["enemies"]]
+collision_layer = 64
+collision_mask = 3
+script = ExtResource("1_rescr")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(1.0, 0.55, 0.0, 1)
+texture = ExtResource("2_texture")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(-0.5, -1)
+shape = SubResource("RectangleShape2D_resize")
+
+[node name="EnemyHurtbox" type="Area2D" parent="."]
+collision_layer = 8
+collision_mask = 16
+script = ExtResource("3_hurtbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyHurtbox"]
+position = Vector2(-3, -1)
+shape = SubResource("RectangleShape2D_hurt")
+
+[node name="EnemyHitbox" type="Area2D" parent="."]
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("4_hitbox")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyHitbox"]
+position = Vector2(0.5, 0)
+shape = SubResource("RectangleShape2D_hit")
+
+[node name="EnemyHealthBar" type="ProgressBar" parent="."]
+modulate = Color(0, 1, 0, 1)
+offset_left = -80.0
+offset_top = -100.0
+offset_right = 81.0
+offset_bottom = -85.0
+show_percentage = false
+
+[connection signal="on_hit" from="EnemyHurtbox" to="." method="_on_enemy_hurtbox_on_hit"]

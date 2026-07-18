@@ -2,10 +2,11 @@
 
 [ext_resource type="PackedScene" uid="uid://bx2y2c40vfqve" path="res://Entities/Enemy/Enemy.tscn" id="1_gogiu"]
 [ext_resource type="Script" uid="uid://3p2ctg5iemu1" path="res://Scripts/Resources/LevelData.gd" id="1_uu776"]
+[ext_resource type="PackedScene" path="res://Entities/Enemy/RangedEnemy.tscn" id="2_renmy"]
 
 [resource]
 script = ExtResource("1_uu776")
 map_path = "res://Scenes/Maps/Map_Level_1_1.tscn"
-enemy_list = Array[PackedScene]([ExtResource("1_gogiu")])
+enemy_list = Array[PackedScene]([ExtResource("1_gogiu"), ExtResource("2_renmy")])
 max_spawn_count = 12
 metadata/_custom_type_script = "uid://3p2ctg5iemu1"

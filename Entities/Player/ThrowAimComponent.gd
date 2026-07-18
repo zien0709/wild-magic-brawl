@@ -10,8 +10,8 @@ func _physics_process(_delta: float) -> void:
 	if not player or not player.input_handler:
 		return
 		
-	# 僅在玩家未抓取物件時，磁吸鎖定可丟擲物
-	if player.grabbed_object == null:
+	# 僅在玩家按住互動鍵且未抓取物件時，磁吸鎖定可丟擲物
+	if player.input_handler.is_interacting and player.grabbed_object == null:
 		var target = get_best_throwable_target()
 		if target:
 			# 將虛擬瞄準點吸附到目標物件上

@@ -46,6 +46,9 @@ func load_career_level(level_data: LevelData) -> void:
 		return
 		
 	var map_instance = map_resource.instantiate()
+	if not map_instance:
+		push_error("❌ 錯誤：地圖實例化失敗！路徑：" + level_data.map_path)
+		return
 	get_tree().root.add_child(map_instance)
 	get_tree().current_scene = map_instance  # 設定為當前主場景
 	print("🗺️ 地圖載入成功：" + level_data.map_path)

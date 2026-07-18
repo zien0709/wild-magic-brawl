@@ -1,4 +1,4 @@
-# res://Entities/enemy.gd
+# res://Entities/Enemy/enemy.gd
 extends CharacterBody2D
 
 @export var base_speed: float = 150.0
@@ -6,7 +6,15 @@ extends CharacterBody2D
 @export var base_damage: int = 1
 @export var base_exp_reward: int = 20
 
-# 建立兩個暫存變數，用來接收 Spawner 傳進來的環境倍率
+@export var attack_range: float = 130.0
+@export var windup_time: float = 0.4
+@export var strike_time: float = 0.1
+@export var recovery_time: float = 0.6
+
+enum AttackState { IDLE, WINDUP, STRIKE, RECOVERY }
+var attack_state: AttackState = AttackState.IDLE
+var attack_timer: float = 0.0
+
 var spawner_hp_mult: float = 1.0
 var spawner_dmg_mult: float = 1.0
 
@@ -20,8 +28,11 @@ var current_hp: int
 var damage: int
 var exp_reward: int 
 
-func _ready():
+var original_color: Color = Color(1, 0, 0, 1)
 
+func _ready():
+	add_to_group("enemies")
+	
 	player = get_tree().get_first_node_in_group("player")
 	current_target = player
 	
@@ -35,6 +46,12 @@ func _ready():
 	if has_node("EnemyHealthBar"):
 		$EnemyHealthBar.max_value = max_hp
 		$EnemyHealthBar.value = current_hp
+	
+	if has_node("Sprite2D"):
+		original_color = $Sprite2D.modulate
+	
+	# 初始化時禁用攻擊盒，等待進入攻擊狀態
+	_set_hitbox_enabled(false)
 
 func scale_monster_stats(current_chapter: String) -> void:
 	var level_modifier: float = 1.0 + (PlayerData.account_level - 1) * 0.1
@@ -44,17 +61,84 @@ func scale_monster_stats(current_chapter: String) -> void:
 	elif current_chapter == "chapter_3":
 		chapter_modifier = 3.5
 		
-	# 完美融合：玩家等級補正 * 章節補正 * Spawner難度注入
 	max_hp = int(base_max_hp * level_modifier * chapter_modifier * spawner_hp_mult)
 	damage = int(base_damage * level_modifier * chapter_modifier * spawner_dmg_mult)
 	exp_reward = int(base_exp_reward * level_modifier) 
 	speed = base_speed
 
-func _physics_process(_delta):
+func _physics_process(delta: float) -> void:
+	_update_attack_state(delta)
+	
+	if attack_state != AttackState.IDLE:
+		return
+	
 	if current_target and is_instance_valid(current_target):
 		var direction = global_position.direction_to(current_target.global_position)
-		velocity = direction * speed
-		move_and_slide()
+		var dist = global_position.distance_to(current_target.global_position)
+		
+		# 心控狀態下，尋找其他敵人
+		if mind_control_component and mind_control_component.is_mind_controlled:
+			current_target = find_closest_other_enemy()
+			if is_instance_valid(current_target):
+				velocity = direction * speed
+				move_and_slide()
+			return
+		
+		# 在攻擊範圍內，開始攻擊
+		if dist <= attack_range:
+			_start_attack()
+		else:
+			velocity = direction * speed
+			move_and_slide()
+
+func _start_attack() -> void:
+	attack_state = AttackState.WINDUP
+	attack_timer = windup_time
+	velocity = Vector2.ZERO
+
+func _update_attack_state(delta: float) -> void:
+	match attack_state:
+		AttackState.WINDUP:
+			attack_timer -= delta
+			# 前搖視覺：紅色閃爍警告
+			var flash = sin(attack_timer * 25.0) * 0.4
+			if has_node("Sprite2D"):
+				$Sprite2D.modulate = Color(1.0, 0.3 + flash, 0.3 + flash, 1.0)
+			
+			if attack_timer <= 0.0:
+				attack_state = AttackState.STRIKE
+				attack_timer = strike_time
+				_perform_strike()
+				
+		AttackState.STRIKE:
+			attack_timer -= delta
+			# 攻擊中：亮紅色
+			if has_node("Sprite2D"):
+				$Sprite2D.modulate = Color(1.0, 0.1, 0.1, 1.0)
+			
+			if attack_timer <= 0.0:
+				attack_state = AttackState.RECOVERY
+				attack_timer = recovery_time
+				_set_hitbox_enabled(false)
+				
+		AttackState.RECOVERY:
+			attack_timer -= delta
+			# 恢復中：暗紅色
+			if has_node("Sprite2D"):
+				$Sprite2D.modulate = Color(0.6, 0.2, 0.2, 1.0)
+			
+			if attack_timer <= 0.0:
+				attack_state = AttackState.IDLE
+				if has_node("Sprite2D"):
+					$Sprite2D.modulate = original_color
+
+func _perform_strike() -> void:
+	_set_hitbox_enabled(true)
+
+func _set_hitbox_enabled(enabled: bool) -> void:
+	if has_node("EnemyHitbox"):
+		$EnemyHitbox.monitoring = enabled
+		$EnemyHitbox.monitorable = enabled
 
 func find_closest_other_enemy() -> CharacterBody2D:
 	var enemies = get_tree().get_nodes_in_group("enemies")
@@ -79,6 +163,5 @@ func _on_enemy_hurtbox_on_hit(damage_amount: int, hitbox: Area2D = null):
 		die()
 		
 func die():
-	# 🟢 改為透過全域事件流廣播，不直接依賴外面的 HUD 節點與 PlayerData 腳本
 	GameEvents.enemy_killed.emit(exp_reward)
 	queue_free()

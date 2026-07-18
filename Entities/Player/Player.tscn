@@ -13,6 +13,9 @@ size = Vector2(122, 123)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_cxr5p"]
 size = Vector2(131, 129)
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_tkzone"]
+radius = 120.0
+
 [node name="Player" type="CharacterBody2D" unique_id=839079120 groups=["player"]]
 collision_layer = 2
 collision_mask = 65
@@ -46,6 +49,13 @@ script = ExtResource("6_tdg3f")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerHurtbox" unique_id=361694182]
 position = Vector2(-1.5, -0.5)
 shape = SubResource("RectangleShape2D_cxr5p")
+
+[node name="TelekinesisZone" type="Area2D" parent="."]
+collision_layer = 0
+collision_mask = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TelekinesisZone"]
+shape = SubResource("CircleShape2D_tkzone")
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=478987689]
 

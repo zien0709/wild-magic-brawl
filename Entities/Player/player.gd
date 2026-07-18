@@ -14,7 +14,6 @@ var current_hp: int = 0         # 當前血量
 @export var max_energy: float = 100.0
 @export var dash_energy_cost: float = 30.0  # 每次閃避消耗的固定能量
 @export var dash_duration: float = 0.58
-@export var shoot_energy_cost: float = 5.0  # 每次射擊消耗的能量
 @export var qte_energy_cost: float = 20.0   # 每次 QTE 心控消耗的能量
 
 var energy: EnergyResource
@@ -124,7 +123,10 @@ func _physics_process(delta):
 			grabbed_object = null
 
 	var current_speed = dash_speed if is_dashing else normal_speed
-	velocity = input_handler.move_direction * current_speed
+	if is_dashing:
+		velocity = dash_direction * current_speed
+	else:
+		velocity = input_handler.move_direction * current_speed
 	move_and_slide()
 
 	# 🛠️ [重構] 處理武器瞄準與開火
@@ -137,8 +139,7 @@ func _physics_process(delta):
 			var muzzle_pos = muzzle.global_position if muzzle else global_position
 			
 			if weapon.can_fire and not weapon.is_reloading and weapon.current_bullets > 0:
-				if energy.try_spend(shoot_energy_cost, "shoot"):
-					weapon.fire(input_handler.aim_position, muzzle_pos)
+				weapon.fire(input_handler.aim_position, muzzle_pos)
 			elif weapon.current_bullets <= 0 and not weapon.is_reloading:
 				weapon.reload()
 			

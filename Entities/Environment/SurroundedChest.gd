@@ -10,6 +10,7 @@ extends Area2D
 var is_triggered: bool = false
 var is_cleared: bool = false
 var monitor_timer: Timer
+var spawned_enemies: Array = []
 
 signal chest_cleared(chest: SurroundedChest)
 
@@ -35,7 +36,8 @@ func _trigger_ambush() -> void:
 		var angle = randf() * TAU
 		var offset = Vector2(cos(angle), sin(angle)) * spawn_radius
 		enemy.global_position = global_position + offset
-		enemy.add_to_group("chest_enemies")
+		enemy.set_meta("chest_source", self)
+		spawned_enemies.append(enemy)
 		get_tree().current_scene.add_child(enemy)
 
 	monitor_timer = Timer.new()
@@ -47,8 +49,8 @@ func _trigger_ambush() -> void:
 	monitor_timer.start()
 
 func _check_enemies_cleared() -> void:
-	var remaining = get_tree().get_nodes_in_group("chest_enemies")
-	if remaining.is_empty():
+	spawned_enemies = spawned_enemies.filter(func(e): return is_instance_valid(e))
+	if spawned_enemies.is_empty():
 		monitor_timer.stop()
 		_on_cleared()
 

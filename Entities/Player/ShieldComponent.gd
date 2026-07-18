@@ -100,13 +100,13 @@ func handle_hit(damage_amount: int, hitbox: Area2D) -> bool:
 		return true
 		
 	elif current_state == ShieldState.ACTIVE:
-		print("🛡️ 觸發一般格擋！")
+		print("🛡️ 護盾被擊破！")
 		normal_block_triggered.emit()
+		_transition_to(ShieldState.BROKEN_COOLDOWN)
 		return true
 		
 	elif current_state == ShieldState.BROKEN_COOLDOWN:
 		print("💥 破盾狀態，無法格擋傷害！")
-		_transition_to(ShieldState.BROKEN_COOLDOWN) # 重置冷卻
 		return false
 		
 	return false
