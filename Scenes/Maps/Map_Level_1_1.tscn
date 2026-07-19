@@ -4,7 +4,6 @@
 [ext_resource type="PackedScene" uid="uid://cvbe01nrgnfel" path="res://Entities/Objects/Campfire.tscn" id="9_r3gmg"]
 [ext_resource type="PackedScene" path="res://Entities/Throwable/WoodenBox.tscn" id="10_wbox"]
 [ext_resource type="PackedScene" path="res://Entities/Throwable/ExplosiveBarrel.tscn" id="11_ebar"]
-[ext_resource type="PackedScene" path="res://Entities/Enemy/RangedEnemy.tscn" id="12_renemy"]
 [ext_resource type="PackedScene" path="res://UI/DefensePromptUI.tscn" id="13_dpui"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ground"]
@@ -60,11 +59,5 @@ position = Vector2(-139, 207)
 position = Vector2(80, -80)
 
 [node name="Enemies" type="Node2D" parent="." unique_id=804130776]
-
-[node name="RangedEnemy1" parent="Enemies" unique_id=805935082 instance=ExtResource("12_renemy")]
-position = Vector2(250, 50)
-
-[node name="RangedEnemy2" parent="Enemies" unique_id=215462681 instance=ExtResource("12_renemy")]
-position = Vector2(-327, 180)
 
 [node name="DefensePromptUI" parent="." unique_id=1417956708 instance=ExtResource("13_dpui")]
