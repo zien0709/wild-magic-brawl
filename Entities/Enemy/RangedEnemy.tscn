@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://c60cjg8ed840x"]
 
 [ext_resource type="Script" uid="uid://c7iit6r0wxnou" path="res://Entities/Enemy/RangedEnemy.gd" id="1_rescr"]
+[ext_resource type="Resource" uid="uid://dnes3fons043x" path="res://Resources/Weapons/Pistol.tres" id="1_tres"]
 [ext_resource type="Texture2D" uid="uid://tbhn50hnyps7" path="res://Assets/Textures/icon.svg" id="2_texture"]
 [ext_resource type="Script" uid="uid://dp483i6spgalq" path="res://Entities/Combat/Hurtbox.gd" id="3_hurtbox"]
 [ext_resource type="Script" uid="uid://ddprm7g7u163s" path="res://Entities/Combat/Hitbox.gd" id="4_hitbox"]
-[ext_resource type="Resource" uid="uid://4e3w0j7o8v9x" path="res://Resources/Weapons/Pistol.tres" id="1_tres"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_resize"]
 size = Vector2(100, 100)
@@ -19,17 +19,17 @@ size = Vector2(80, 80)
 collision_layer = 64
 collision_mask = 3
 script = ExtResource("1_rescr")
-base_speed = 120.0
-base_max_hp = 4
-base_damage = 1
-base_exp_reward = 30
-shoot_cooldown = 5.0
-preferred_range = 250.0
-flee_range = 150.0
+base_speed = null
+base_max_hp = null
+base_damage = null
+base_exp_reward = null
+shoot_cooldown = null
+preferred_range = null
+flee_range = null
 weapon_resource = ExtResource("1_tres")
-windup_time = 0.4
-strike_time = 0.1
-recovery_time = 0.8
+windup_time = null
+strike_time = null
+recovery_time = null
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=157599830]
 modulate = Color(1, 0.55, 0, 1)
@@ -68,7 +68,10 @@ show_percentage = false
 [node name="WeaponHandler" type="Node2D" parent="." unique_id=1320184149]
 
 [node name="WeaponSprite" type="Sprite2D" parent="WeaponHandler" unique_id=1481623657]
+position = Vector2(78, 9)
+offset = Vector2(15, 0)
 
 [node name="Muzzle" type="Marker2D" parent="WeaponHandler/WeaponSprite" unique_id=1654312035]
+position = Vector2(60, -1)
 
 [connection signal="on_hit" from="EnemyHurtbox" to="." method="_on_enemy_hurtbox_on_hit"]
