@@ -32,6 +32,7 @@ var grabbed_object: RigidBody2D = null
 
 @onready var hurtbox = $PlayerHurtbox
 
+const HUD_SCENE = preload("res://Scenes/UI/GameHUD.tscn")
 
 func _ready():
 	current_hp = max_hp         # 遊戲一開始，把血量補滿
@@ -76,6 +77,16 @@ func _ready():
 	
 	health_changed.emit(current_hp, max_hp)
 	energy_changed.emit(energy.current_energy, energy.max_energy)
+	
+	_load_hud()
+
+func _load_hud():
+	if get_tree().current_scene == null:
+		return
+	if get_tree().get_first_node_in_group("hud") != null:
+		return
+	var hud = HUD_SCENE.instantiate()
+	get_tree().current_scene.add_child.call_deferred(hud)
 
 func _on_player_hurtbox_on_hit(damage_amount: int, hitbox: Area2D = null):
 	if shield_component and shield_component.handle_hit(damage_amount, hitbox):
