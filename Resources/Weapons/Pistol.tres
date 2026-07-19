@@ -6,7 +6,7 @@
 
 [resource]
 script = ExtResource("1_pp57v")
-name = "Pistol"
 texture = ExtResource("2_wpn")
+name = "Pistol"
 bullet_scene = ExtResource("1_25jnp")
 metadata/_custom_type_script = "uid://1vua8rtdst0k"

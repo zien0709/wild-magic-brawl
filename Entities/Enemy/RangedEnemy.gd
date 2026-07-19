@@ -20,7 +20,7 @@ var current_hp: int
 var damage: int
 var exp_reward: int
 
-	var shoot_timer: float = 0.0
+var shoot_timer: float = 0.0
 var can_shoot: bool = true
 var _print_counter: int = 0
 

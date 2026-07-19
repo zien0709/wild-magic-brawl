@@ -19,17 +19,7 @@ size = Vector2(80, 80)
 collision_layer = 64
 collision_mask = 3
 script = ExtResource("1_rescr")
-base_speed = null
-base_max_hp = null
-base_damage = null
-base_exp_reward = null
-shoot_cooldown = null
-preferred_range = null
-flee_range = null
 weapon_resource = ExtResource("1_tres")
-windup_time = null
-strike_time = null
-recovery_time = null
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=157599830]
 modulate = Color(1, 0.55, 0, 1)
@@ -50,7 +40,7 @@ shape = SubResource("RectangleShape2D_hurt")
 
 [node name="EnemyHitbox" type="Area2D" parent="." unique_id=204706672]
 collision_layer = 32
-collision_mask = 0
+collision_mask = 4
 script = ExtResource("4_hitbox")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyHitbox" unique_id=666115355]

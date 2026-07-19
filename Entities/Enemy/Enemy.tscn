@@ -37,7 +37,7 @@ shape = SubResource("RectangleShape2D_2hac7")
 
 [node name="EnemyHitbox" type="Area2D" parent="." unique_id=2094155021]
 collision_layer = 32
-collision_mask = 0
+collision_mask = 4
 script = ExtResource("4_qp131")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyHitbox" unique_id=1584312719]
