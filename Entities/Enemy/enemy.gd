@@ -65,6 +65,8 @@ func scale_monster_stats(current_chapter: String) -> void:
 	damage = int(base_damage * level_modifier * chapter_modifier * spawner_dmg_mult)
 	exp_reward = int(base_exp_reward * level_modifier) 
 	speed = base_speed
+	if has_node("EnemyHitbox"):
+		$EnemyHitbox.damage = damage
 
 func _physics_process(delta: float) -> void:
 	_update_attack_state(delta)
@@ -139,6 +141,8 @@ func _set_hitbox_enabled(enabled: bool) -> void:
 	if has_node("EnemyHitbox"):
 		$EnemyHitbox.monitoring = enabled
 		$EnemyHitbox.monitorable = enabled
+		if enabled:
+			$EnemyHitbox.is_spent = false
 
 func find_closest_other_enemy() -> CharacterBody2D:
 	var enemies = get_tree().get_nodes_in_group("enemies")

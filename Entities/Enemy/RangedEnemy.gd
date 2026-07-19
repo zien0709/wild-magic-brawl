@@ -20,8 +20,9 @@ var current_hp: int
 var damage: int
 var exp_reward: int
 
-var shoot_timer: float = 0.0
+	var shoot_timer: float = 0.0
 var can_shoot: bool = true
+var _print_counter: int = 0
 
 @onready var weapon_handler: Node2D = $WeaponHandler
 @onready var weapon_sprite: Sprite2D = $WeaponHandler/WeaponSprite
@@ -77,11 +78,11 @@ func scale_monster_stats(current_chapter: String) -> void:
 	speed = base_speed
 
 func _physics_process(delta: float) -> void:
+	_print_counter += 1
+	if _print_counter % 60 == 0:
+		print("RangedEnemy pos=", global_position)
 	if not is_instance_valid(player):
 		return
-	
-	velocity = Vector2.ZERO
-	move_and_slide()
 	
 	_update_attack_state(delta)
 	
@@ -116,9 +117,6 @@ func _physics_process(delta: float) -> void:
 		velocity = dir_to_target * speed
 		move_and_slide()
 	else:
-		velocity = Vector2.ZERO
-		move_and_slide()
-		
 		if can_shoot and attack_state == AttackState.IDLE and not (mind_control_component and mind_control_component.is_mind_controlled):
 			_start_attack()
 
@@ -191,3 +189,4 @@ func _on_enemy_hurtbox_on_hit(damage_amount: int, hitbox: Area2D = null):
 
 func die():
 	GameEvents.enemy_killed.emit(exp_reward)
+	queue_free()
