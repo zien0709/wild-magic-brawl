@@ -12,3 +12,4 @@ class_name WeaponResource  # 這讓這份檔案變成一個可以被選取的類
 @export var reload_time: float = 1.5       # 換彈時間(秒)
 @export var bullet_speed: float = 500.0    # 子彈速度
 @export var damage: int = 1                # 子彈傷害
+@export var bullet_range: float = 800.0    # 子彈射程

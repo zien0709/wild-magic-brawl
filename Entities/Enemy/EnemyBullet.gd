@@ -21,7 +21,18 @@ func _physics_process(delta: float) -> void:
 	if distance_traveled >= max_range:
 		queue_free()
 
-func setup(dir: Vector2, dmg: int, rng: float) -> void:
+func setup_dir_target(dir: Vector2, dmg: int) -> void:
+	direction = dir.normalized()
+	damage = dmg
+	rotation = direction.angle()
+
+func setup_dir_speed(dir: Vector2, dmg: int, spd: float) -> void:
+	direction = dir.normalized()
+	damage = dmg
+	speed = spd
+	rotation = direction.angle()
+
+func setup_full(dir: Vector2, dmg: int, rng: float) -> void:
 	direction = dir.normalized()
 	damage = dmg
 	max_range = rng

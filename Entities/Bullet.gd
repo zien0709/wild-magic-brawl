@@ -2,23 +2,25 @@
 extends Hitbox
 
 var speed: float = 0.0
+var direction: Vector2 = Vector2.RIGHT
 
 # 🎯 恢復被武器系統呼叫的初始化函式
-func setup(p_speed: float, p_damage: int) -> void:
-	speed = p_speed
+func setup(p_direction: Vector2, p_damage: int, p_speed: float) -> void:
+	direction = p_direction.normalized()
 	damage = p_damage
+	speed = p_speed
 
 func _ready() -> void:
 	# 綁定牆壁碰撞與區域碰撞
 	body_entered.connect(_on_body_entered)
-	area_entered.connect(_on_area_entered)
+	area_entered.connect(_on_area_entered)	
 	
 	# 安全機制：3秒內沒打中任何東西自動銷毀，免得記憶體爆炸
 	get_tree().create_timer(3.0).timeout.connect(queue_free)
 
 func _physics_process(delta: float) -> void:
-	# 讓子彈朝著它面向的方向（X軸正向）飛過去
-	position += transform.x * speed * delta
+	# 讓子彈朝著設定的方向飛過去
+	position += direction * speed * delta
 
 func _on_body_entered(_body: Node2D) -> void:
 	# 撞擊到牆壁等環境物理主體時直接銷毀

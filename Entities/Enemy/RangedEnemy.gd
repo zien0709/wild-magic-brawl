@@ -22,7 +22,7 @@ var exp_reward: int
 
 var shoot_timer: float = 0.0
 var can_shoot: bool = true
-var _print_counter: int = 0
+var _target_direction: Vector2 = Vector2.RIGHT
 
 @onready var weapon_handler: Node2D = $WeaponHandler
 @onready var weapon_sprite: Sprite2D = $WeaponHandler/WeaponSprite
@@ -78,9 +78,6 @@ func scale_monster_stats(current_chapter: String) -> void:
 	speed = base_speed
 
 func _physics_process(delta: float) -> void:
-	_print_counter += 1
-	if _print_counter % 60 == 0:
-		print("RangedEnemy pos=", global_position)
 	if not is_instance_valid(player):
 		return
 	
@@ -102,6 +99,7 @@ func _physics_process(delta: float) -> void:
 		return
 	
 	var dir_to_target = global_position.direction_to(current_target.global_position)
+	_target_direction = dir_to_target
 	
 	weapon_handler.look_at(current_target.global_position)
 	
@@ -162,7 +160,7 @@ func _perform_attack() -> void:
 	bullet.global_position = muzzle.global_position
 	bullet.global_rotation = weapon_handler.global_rotation
 	
-	bullet.setup(weapon_resource.bullet_speed, weapon_resource.damage)
+	bullet.setup_full(_target_direction, weapon_resource.damage, 500.0)
 	get_tree().current_scene.add_child(bullet)
 
 func find_closest_other_enemy() -> CharacterBody2D:

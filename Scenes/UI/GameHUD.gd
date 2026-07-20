@@ -1,9 +1,9 @@
 #res://Scenes/UI/GameHUD.gd
 extends CanvasLayer
 
-# 🎯 用你的實際節點路徑（請根據編輯器右側微調）
-@onready var health_bar = $PlayerHealthBar  # 如果你的名字叫 HealthBar 就改成 $HealthBar
-@onready var energy_bar = $DashEnergyBar  # 如果名字叫 EnergyBar 就改成 $EnergyBar
+
+@onready var health_bar = $PlayerHealthBar 
+@onready var energy_bar = $DashEnergyBar  
 @onready var ammo_label: Label = $RightTopContainer/WeaponHUD/HBoxContainer/AmmoLabel
 @onready var weapon_icon: TextureRect = $RightTopContainer/WeaponHUD/HBoxContainer/WeaponIcon
 @onready var notification_box: VBoxContainer = $LeftTopContainer/NotificationBox

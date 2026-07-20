@@ -10,6 +10,7 @@ var prompt_label: Label
 var player: Node2D
 var current_alpha: float = 0.0
 var prompt_visible: bool = false
+var camera: Camera2D
 
 func _ready() -> void:
 	layer = 10
@@ -28,6 +29,7 @@ func _ready() -> void:
 	add_child(prompt_label)
 	
 	player = get_tree().get_first_node_in_group("player")
+	camera = get_viewport().get_camera_2d()
 
 func _process(delta: float) -> void:
 	if not is_instance_valid(player):
@@ -44,8 +46,9 @@ func _process(delta: float) -> void:
 	if current_alpha > 0.01:
 		prompt_label.visible = true
 		prompt_label.modulate.a = current_alpha
-		prompt_label.global_position = player.global_position + prompt_offset
-		prompt_label.position.x -= prompt_label.size.x / 2.0
+		var world_pos = player.global_position + prompt_offset
+		var canvas_transform = get_viewport().get_canvas_transform()
+		prompt_label.global_position = canvas_transform * world_pos - Vector2(prompt_label.size.x / 2.0, 0)
 	else:
 		prompt_label.visible = false
 

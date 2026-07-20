@@ -470,3 +470,158 @@ func apply_degrade() -> void:
 ## 8. 給你(人類)的一句話總結
 
 這份規格書刻意把**所有「品味/平衡/美術」類的決策都標成人工決策點**,agent 只負責把系統的骨架、資料結構、訊號串接做出來——因為這些才是會拖垮一個人專案的重複性工程量,而美術風格、數值手感這種東西,終究還是要靠你自己玩過、調過才會準。16 個月看似寬裕,但第四階段的網路同步風險最高,如果中途發現進度落後,**第一個該砍的是任務 4.5 的延遲補償**,直接接受「已知限制」交出去,不要為了打磨網路手感而犧牲前三階段的完整度。
+
+---
+
+## 9. 下一步:給 OpenCode 的原子任務(Atomic Tasks)
+
+Phase 1 骨架已站穩,但 OpenCode 自行超前實作了 Phase 3 的遠程怪物與一個防禦提示 UI,過程中留下兩個新 bug。以下把「修這兩個 bug」跟「正式啟動 Phase 2」拆成原子任務,你可以整段丟給 OpenCode。**每個任務都要求它在完成後把結果寫進 `res://state.json`**,你之後把這個檔案傳給我,我可以直接讀懂目前每個任務的完成狀態、有沒有留下已知問題,不需要你再手動轉述。
+
+### 📄 `state.json` 統一格式(所有任務共用,累加寫入,不要覆蓋別的任務記錄)
+
+```json
+{
+  "tasks": [
+    {
+      "task_id": "BUGFIX-01",
+      "status": "done | failed | partial",
+      "files_changed": ["res://Entities/Enemy/RangedEnemy.gd"],
+      "summary": "一句話說明做了什麼",
+      "known_issues": ["如果有沒解決的細節，列在這裡，沒有就給空陣列"],
+      "manual_verification_needed": ["需要你在編輯器手動測試/調整的項目，沒有就給空陣列"]
+    }
+  ]
+}
+```
+每完成一個任務,就在 `tasks` 陣列裡 `append` 一筆記錄,不要刪除或覆蓋之前任務的記錄。
+
+---
+
+### 🔧 原子任務 BUGFIX-01:修正 `RangedEnemy` 開槍時的函式簽章錯誤
+
+**1. 任務目標與預期輸出**
+```markdown
+目標:修正 RangedEnemy._perform_attack() 呼叫 EnemyBullet.setup() 時的參數不匹配問題，
+讓遠程怪物能夠正常發射子彈，不再於攻擊時報錯。
+
+預期輸出:
+- RangedEnemy.gd 中 _perform_attack() 修改後的完整函式內容
+- 說明修改前後的差異（呼叫端如何組出正確的 3 個參數：方向向量、傷害、射程）
+```
+
+**2. 所需工具調用清單**
+```
+1. 讀取工具：讀取 res://Entities/Enemy/RangedEnemy.gd 全文，確認 _perform_attack() 
+   與 _physics_process() 中 dir_to_target 的計算方式
+2. 讀取工具：讀取 res://Entities/Enemy/EnemyBullet.gd 全文，確認 setup() 的完整簽章
+   （參數順序：dir: Vector2, dmg: int, rng: float）
+3. 讀取工具：讀取 res://Scripts/Resources/WeaponResource.gd，確認是否有 bullet_speed / 
+   bullet_scene / damage 等欄位可用，以及是否需要新增射程相關欄位（如 bullet_range）
+4. （不需要網路搜尋，這是專案內部邏輯修正，不涉及外部技術規格查證）
+```
+
+**3. 語法規範與效能限制**
+```
+- 呼叫 bullet.setup() 時，第一個參數必須是 Vector2（方向，已正規化），不可傳入純速度數值
+- 若 EnemyBullet 需要知道飛行速度，speed 應該在 EnemyBullet 的 @export 直接設定初始值，
+  或額外擴充 setup() 簽章為 setup(dir, dmg, rng, spd)，兩種做法擇一，並同步修改雙方
+- 不要在 _physics_process()（每幀執行）中做任何字串拼接或印出 debug log（現有
+  _print_counter 那段 print 已經是效能負擔，順手清掉，每幀印 log 在正式版本要避免）
+- 保持與現有 enemy.gd 相同的程式風格（tab 縮排、函式命名慣例）
+```
+
+**4. 完成後**
+```
+把這個任務的執行結果寫進 res://state.json 的 tasks 陣列（task_id: "BUGFIX-01"），
+包含 files_changed、summary、若清除了 debug print 也要在 summary 註明。
+```
+
+---
+
+### 🔧 原子任務 BUGFIX-02:修正 `DefensePromptUI` 世界座標誤用螢幕座標的問題
+
+**1. 任務目標與預期輸出**
+```markdown
+目標:修正 DefensePromptUI.gd 中，CanvasLayer 底下的 Label 直接使用玩家世界座標
+(player.global_position) 作為 global_position 的錯誤，改為正確地將世界座標轉換為
+螢幕座標，讓提示文字無論鏡頭移動到哪裡，都能正確顯示在玩家頭頂上方。
+
+預期輸出:
+- DefensePromptUI.gd 修改後的完整內容
+- 簡短說明使用了哪種轉換方式（例如透過 Camera2D 的 get_viewport().get_canvas_transform()，
+  或改為不使用 CanvasLayer、直接把 Label 掛在世界空間節點下並用 top_level 屬性維持文字不隨鏡頭縮放）
+```
+
+**2. 所需工具調用清單**
+```
+1. 讀取工具：讀取 res://UI/DefensePromptUI.gd 全文
+2. 讀取工具：讀取玩家場景 res://Entities/Player/Player.tscn，確認 Camera2D 節點路徑
+   與是否有設定 zoom（會影響座標轉換公式）
+3. 讀取工具：搜尋專案內是否已有其他「世界座標轉螢幕座標」的既有寫法可以參考沿用
+   （例如搜尋 canvas_transform 或 unproject 關鍵字），避免同一個問題兩種修法並存
+```
+
+**3. 語法規範與效能限制**
+```
+- 座標轉換每幀（_process）都要重新計算，因為鏡頭位置每幀都可能改變，不能只算一次快取
+- 若專案的 Camera2D 有做縮放（zoom != Vector2.ONE），轉換公式必須考慮縮放比例，
+  否則文字位置在鏡頭縮放時會偏移
+- 不要為了修這個問題而改動 DefensePromptUI 以外的檔案，除非發現 Camera2D 節點路徑
+  跟預期不同，才需要做最小幅度的調整
+```
+
+**4. 完成後**
+```
+把這個任務的執行結果寫進 res://state.json 的 tasks 陣列（task_id: "BUGFIX-02"），
+並在 manual_verification_needed 註明：「請在編輯器內移動鏡頭到遠離出生點的位置，
+確認提示文字仍正確顯示在玩家頭頂」。
+```
+
+---
+
+### 🚀 原子任務 PHASE2-01:啟動第二階段——1-1 關卡分支事件框架
+
+依賴:BUGFIX-01、BUGFIX-02 皆完成且無 `failed` 狀態
+
+**1. 任務目標與預期輸出**
+```markdown
+目標:建立「平面國」四選一分支事件的通用框架 BranchEventManager，
+先做出「觸發區域 → 進入分支 → 收束到強制段落」的骨架流程，
+劇情文本與美術內容先用預留註解標記，不需要真的寫故事內容。
+
+預期輸出:
+- 新檔案 res://Core/BranchEventManager.gd 完整內容
+- 新場景 res://Scenes/Maps/Map_Level_1_1_Sandbox.tscn 的骨架結構說明
+  （至少包含一個可實際觸發、跑完、收束的分支路徑範例）
+- 一份清楚標記「這裡需要使用者填入劇情文本/對話/美術」的 TODO 清單
+```
+
+**2. 所需工具調用清單**
+```
+1. 讀取工具：讀取現有 res://Core/LevelManager.gd 全文，理解現有關卡切換/狀態管理慣例，
+   確保 BranchEventManager 的設計風格與現有架構一致（避免又做出第二套平行系統）
+2. 讀取工具：讀取現有 res://Scenes/Maps/Map_Level_1_1.tscn，作為新沙盒場景的基礎
+3. 讀取工具：讀取 res://Scripts/Resources/LevelData.gd，確認是否需要擴充欄位以支援
+   分支事件的資料驅動設定（例如新增 branch_event_ids 陣列欄位）
+4. （不需要網路搜尋）
+```
+
+**3. 語法規範與效能限制**
+```
+- 觸發區域一律用 Area2D + body_entered 訊號，不要用 _physics_process 逐幀距離檢查
+  （效能考量，戳觸發範圍不需要每幀計算距離）
+- 分支狀態要用 enum 明確定義，不要用字串比對（字串容易打錯字造成難以除錯的 bug）
+- 四條分支之間如果會有觸發區域重疊的邊界情況，必須在骨架中預留「只能觸發一次、
+  觸發後鎖定其他分支入口」的防呆機制，不要留到之後才處理
+```
+
+**4. 完成後**
+```
+把這個任務的執行結果寫進 res://state.json 的 tasks 陣列（task_id: "PHASE2-01"），
+並在 known_issues 中列出所有你認為需要使用者決定劇情內容/美術風格，但目前只用
+預留 TODO 標記帶過的地方。
+```
+
+---
+
+把上面整段(包含 `state.json` 格式定義跟三個原子任務)複製給 OpenCode 即可,它做完你把 `state.json` 傳給我,我可以直接看懂進度,不用你再重新描述一次。

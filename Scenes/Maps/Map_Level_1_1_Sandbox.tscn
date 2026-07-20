@@ -1,0 +1,56 @@
+[gd_scene format=3 uid="uid://g0i43ol5nrrk"]
+
+[ext_resource type="Script" uid="uid://bblfq1e7bmo8n" path="res://Core/BranchEventManager.gd" id="1_vgflg"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xheaw"]
+size = Vector2(120, 80)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_t0ro7"]
+size = Vector2(120, 80)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_q4olw"]
+size = Vector2(120, 80)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_y13uf"]
+size = Vector2(120, 80)
+
+[node name="Map_Level_1_1_Sandbox" type="Node2D" unique_id=419574188]
+
+[node name="TileMapLayer_Ground" type="TileMapLayer" parent="." unique_id=2036991858]
+
+[node name="SpawnPoint" type="Marker2D" parent="." unique_id=264406717]
+
+[node name="Throwables" type="Node2D" parent="." unique_id=840745258]
+
+[node name="Enemies" type="Node2D" parent="." unique_id=274231060]
+
+[node name="BranchEventManager" type="Node2D" parent="." unique_id=1334563462]
+script = ExtResource("1_vgflg")
+
+[node name="Branch_A" type="Area2D" parent="BranchEventManager" unique_id=752630019]
+position = Vector2(0, -300)
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BranchEventManager/Branch_A" unique_id=1084767854]
+shape = SubResource("RectangleShape2D_xheaw")
+
+[node name="Branch_B" type="Area2D" parent="BranchEventManager" unique_id=2042347638]
+position = Vector2(300, 0)
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BranchEventManager/Branch_B" unique_id=1585906491]
+shape = SubResource("RectangleShape2D_t0ro7")
+
+[node name="Branch_C" type="Area2D" parent="BranchEventManager" unique_id=531697342]
+position = Vector2(0, 300)
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BranchEventManager/Branch_C" unique_id=857006122]
+shape = SubResource("RectangleShape2D_q4olw")
+
+[node name="Branch_D" type="Area2D" parent="BranchEventManager" unique_id=684319425]
+position = Vector2(-300, 0)
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BranchEventManager/Branch_D" unique_id=980934520]
+shape = SubResource("RectangleShape2D_y13uf")

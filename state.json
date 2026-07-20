@@ -1,0 +1,40 @@
+{
+  "tasks": [
+    {
+      "task_id": "BUGFIX-01",
+      "status": "done",
+      "files_changed": ["res://Entities/Enemy/RangedEnemy.gd", "res://Entities/Enemy/EnemyBullet.gd"],
+      "summary": "修正 _perform_attack() 呼叫 EnemyBullet.setup() 參數不匹配（EnemyBullet.setup 只有 2 個參數）：同時新增兩個新函式 setup_speed_target()（2 參數）和 setup_full()（3 參數），用來區分不同的初始化場景，並更新 RangedEnemy 呼叫 pipeline",
+      "known_issues": [],
+      "manual_verification_needed": ["在編輯器內執行遊戲，確認 RangedEnemy 能正常發射子彈且飛向玩家方向"]
+    },
+    {
+      "task_id": "BUGFIX-02",
+      "status": "done",
+      "files_changed": ["res://UI/DefensePromptUI.gd"],
+      "summary": "修正 CanvasLayer 子節點用世界座標當螢幕座標的問題：改用 get_viewport().get_canvas_transform() 將玩家世界座標轉換為螢幕座標，新增 camera 參考",
+      "known_issues": [],
+      "manual_verification_needed": ["請在編輯器內移動鏡頭到遠離出生點的位置，確認提示文字仍正確顯示在玩家頭頂"]
+    },
+    {
+      "task_id": "PHASE2-01",
+      "status": "done",
+      "files_changed": [
+        "res://Core/BranchEventManager.gd",
+        "res://Scenes/Maps/Map_Level_1_1_Sandbox.tscn"
+      ],
+      "summary": "建立 BranchEventManager 通用框架（BranchState enum: IDLE/BRANCH_ACTIVE/BRANCH_RESOLVING/CONVERGENCE/COMBAT + 4 區域觸發 + 鎖定防呆 + 收束/戰鬥階段切換），並在 Map_Level_1_1_Sandbox 場景中建立四個分支觸發區（Area2D + CollisionShape2D，分佈於上下左右四方向，collision_mask=2 偵測玩家）。場景結構：TileMapLayer_Ground / SpawnPoint / Throwables / Enemies / BranchEventManager（含 Branch_A~D）",
+      "known_issues": [
+        "TileMapLayer_Ground 尚未配置 TileSet/地磚，需要在編輯器中設定地面視覺",
+        "四條分支的劇情文本、對話、美術內容全部為空，需使用者填入",
+        "尚未建立對應的 LevelData.tres 資源檔指向此沙盒場景"
+      ],
+      "manual_verification_needed": [
+        "在編輯器中打開 Map_Level_1_1_Sandbox.tscn，配置 TileMapLayer_Ground 的 TileSet 並繪製地面",
+        "建立 LevelData.tres 設定 map_path 指向 res://Scenes/Maps/Map_Level_1_1_Sandbox.tscn",
+        "在 BranchEventManager 上接聽 branch_triggered/convergence_reached 訊號，填入分支劇情邏輯",
+        "實測四個分支觸發區：玩家走進任一區域後，其他三個應自動鎖定不可觸發"
+      ]
+    }
+  ]
+}
