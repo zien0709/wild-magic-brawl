@@ -51,6 +51,19 @@
         "_on_convergence_reached(): 此處需要使用者填入收束段落的劇情文本/對話/UI 呈現（警報事件、逃脫段落等）",
         "_on_combat_phase_started(): 此處需要使用者填入戰鬥階段開始的劇情文本/UI 呈現（戰鬥開始 UI、刷怪啟動、BGM 切換等）"
       ]
+    },
+    {
+      "task_id": "BUGFIX-03",
+      "status": "done",
+      "files_changed": [
+        "res://Entities/Bullet.gd",
+        "res://Entities/Enemy/RangedEnemy.gd"
+      ],
+      "summary": "修正 RangedEnemy 報錯 nonexistent function 'setup_full'（Bullet.gd 只有 setup() 無 setup_full()）：改為呼叫 bullet.setup()；同時修正 Bullet.gd 的 setup() 簽章改為支援 2 參數（speed, damage）與 3 參數（direction, damage, speed）雙相容，並讓怪物子彈擊中 player 群組 Hurtbox 時正確 queue_free 消失",
+      "known_issues": [],
+      "manual_verification_needed": [
+        "在編輯器內執行遊戲，確認玩家子彈正常發射、怪物遠程子彈正常發射、兩者擊中目標後皆會正確消失"
+      ]
     }
   ]
 }

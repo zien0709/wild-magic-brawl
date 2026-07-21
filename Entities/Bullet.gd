@@ -4,11 +4,15 @@ extends Hitbox
 var speed: float = 0.0
 var direction: Vector2 = Vector2.RIGHT
 
-# 🎯 恢復被武器系統呼叫的初始化函式
-func setup(p_direction: Vector2, p_damage: int, p_speed: float) -> void:
-	direction = p_direction.normalized()
+# 🎯 恢復被武器系統與怪物系統呼叫的初始化函式 (相容 2 參數與 3 參數版本)
+func setup(p_arg1, p_damage: int, p_speed: float = -1.0) -> void:
 	damage = p_damage
-	speed = p_speed
+	if p_arg1 is Vector2:
+		direction = p_arg1.normalized()
+		speed = p_speed
+	else:
+		speed = p_arg1
+		direction = Vector2.RIGHT.rotated(rotation)
 
 func _ready() -> void:
 	# 綁定牆壁碰撞與區域碰撞
