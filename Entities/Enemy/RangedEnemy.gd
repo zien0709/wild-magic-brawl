@@ -5,7 +5,6 @@ extends CharacterBody2D
 @export var base_max_hp: int = 4
 @export var base_damage: int = 1
 @export var base_exp_reward: int = 30
-@export var shoot_cooldown: float = 5.0
 @export var preferred_range: float = 250.0
 @export var flee_range: float = 150.0
 @export var weapon_resource: WeaponResource
@@ -23,6 +22,9 @@ var exp_reward: int
 var shoot_timer: float = 0.0
 var can_shoot: bool = true
 var _target_direction: Vector2 = Vector2.RIGHT
+
+var _cached_cooldown: float = 5.0
+var _cached_bullet_speed: float = 500.0
 
 @onready var weapon_handler: Node2D = $WeaponHandler
 @onready var weapon_sprite: Sprite2D = $WeaponHandler/WeaponSprite
@@ -62,7 +64,8 @@ func setup_weapon() -> void:
 	if weapon_resource:
 		if weapon_resource.texture:
 			weapon_sprite.texture = weapon_resource.texture
-		damage = weapon_resource.damage
+		_cached_cooldown = weapon_resource.cooldown
+		_cached_bullet_speed = weapon_resource.bullet_speed
 
 func scale_monster_stats(current_chapter: String) -> void:
 	var level_modifier: float = 1.0 + (PlayerData.account_level - 1) * 0.1
@@ -122,7 +125,7 @@ func _start_attack() -> void:
 	attack_state = AttackState.WINDUP
 	attack_timer = windup_time
 	can_shoot = false
-	shoot_timer = shoot_cooldown
+	shoot_timer = _cached_cooldown
 	modulate = Color(1.0, 0.6, 0.0, 1.0)
 
 func _update_attack_state(delta: float) -> void:
@@ -160,7 +163,7 @@ func _perform_attack() -> void:
 	bullet.global_position = muzzle.global_position
 	bullet.global_rotation = weapon_handler.global_rotation
 	
-	bullet.setup(_target_direction, weapon_resource.damage, 500.0)
+	bullet.setup(_target_direction, weapon_resource.damage, _cached_bullet_speed)
 	get_tree().current_scene.add_child(bullet)
 
 func find_closest_other_enemy() -> CharacterBody2D:

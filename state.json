@@ -64,6 +64,24 @@
       "manual_verification_needed": [
         "在編輯器內執行遊戲，確認玩家子彈正常發射、怪物遠程子彈正常發射、兩者擊中目標後皆會正確消失"
       ]
+    },
+    {
+      "task_id": "PHASE2-03",
+      "status": "done",
+      "files_changed": [
+        "res://Resources/Weapons/EnemyPistol.tres",
+        "res://Entities/Enemy/RangedEnemy.tscn",
+        "res://Entities/Enemy/RangedEnemy.gd"
+      ],
+      "files_deleted": [
+        "res://Entities/Enemy/EnemyBullet.gd",
+        "res://Entities/Enemy/EnemyBullet.tscn"
+      ],
+      "summary": "建立 EnemyPistol.tres（cooldown=0.8, damage=1, bullet_speed=350.0, bullet_range=350.0）；RangedEnemy.tscn 改指向 EnemyPistol.tres；RangedEnemy.gd 移除 shoot_cooldown 獨立變數，改用 _cached_cooldown/_cached_bullet_speed 從 weapon_resource 快取讀取（setup_weapon 時一次性快取），_perform_attack 使用快取子彈速度取代硬編碼 500.0；刪除無引用孤兒檔案 EnemyBullet.gd/.tscn/.uid",
+      "known_issues": [],
+      "manual_verification_needed": [
+        "在編輯器內執行遊戲，確認遠程怪物開槍頻率明顯比玩家慢（約每 0.8 秒一次而非原本 5 秒或更快）、子彈飛行速度明顯比玩家的慢、傷害維持最低，且刪除 EnemyBullet 相關檔案後專案仍能正常編譯執行"
+      ]
     }
   ]
 }
