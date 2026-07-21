@@ -160,7 +160,7 @@ func _perform_attack() -> void:
 	bullet.global_position = muzzle.global_position
 	bullet.global_rotation = weapon_handler.global_rotation
 	
-	bullet.setup_full(_target_direction, weapon_resource.damage, 500.0)
+	bullet.setup(_target_direction, weapon_resource.damage, 500.0)
 	get_tree().current_scene.add_child(bullet)
 
 func find_closest_other_enemy() -> CharacterBody2D:

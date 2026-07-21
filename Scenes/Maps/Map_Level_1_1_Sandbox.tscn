@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://g0i43ol5nrrk"]
 
 [ext_resource type="Script" uid="uid://bblfq1e7bmo8n" path="res://Core/BranchEventManager.gd" id="1_vgflg"]
-[ext_resource type="Script" path="res://Scenes/Maps/Map_Level_1_1_Sandbox_Handler.gd" id="2_handler"]
+[ext_resource type="Script" uid="uid://o4ju1g14mqrh" path="res://Scenes/Maps/Map_Level_1_1_Sandbox_Handler.gd" id="2_handler"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xheaw"]
 size = Vector2(120, 80)

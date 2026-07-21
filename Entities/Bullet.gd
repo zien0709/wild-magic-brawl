@@ -27,15 +27,18 @@ func _on_body_entered(_body: Node2D) -> void:
 	queue_free()
 
 func _on_area_entered(area: Area2D) -> void:
-	# 偵測到對方是 Hurtbox 且屬於敵人時
-	if area is Hurtbox and area.get_parent() and area.get_parent().is_in_group("enemies"):
-		if PlayerData.talents.get("bullet_pierce", false):
-			# 🌟 穿透天賦邏輯：
-			# 因為 Hurtbox 會自動將子彈的 is_spent 設為 true 以防止同幀重複扣血，
-			# 這裡將其重設為 false，確保子彈能繼續對下一個穿透的敵人造成傷害！
-			is_spent = false
-		else:
-			# 沒有穿透天賦則直接銷毀
+	if area is Hurtbox and area.get_parent():
+		var parent = area.get_parent()
+		if parent.is_in_group("enemies"):
+			if PlayerData.talents.get("bullet_pierce", false):
+				# 🌟 穿透天賦邏輯：
+				# 因為 Hurtbox 會自動將子彈的 is_spent 設為 true 以防止同幀重複扣血，
+				# 這裡將其重設為 false，確保子彈能繼續對下一個穿透的敵人造成傷害！
+				is_spent = false
+			else:
+				# 沒有穿透天賦則直接銷毀
+				queue_free()
+		elif parent.is_in_group("player"):
 			queue_free()
 
 func _draw() -> void:
