@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://g0i43ol5nrrk"]
 
 [ext_resource type="Script" uid="uid://bblfq1e7bmo8n" path="res://Core/BranchEventManager.gd" id="1_vgflg"]
+[ext_resource type="Script" path="res://Scenes/Maps/Map_Level_1_1_Sandbox_Handler.gd" id="2_handler"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_xheaw"]
 size = Vector2(120, 80)
@@ -15,6 +16,7 @@ size = Vector2(120, 80)
 size = Vector2(120, 80)
 
 [node name="Map_Level_1_1_Sandbox" type="Node2D" unique_id=419574188]
+script = ExtResource("2_handler")
 
 [node name="TileMapLayer_Ground" type="TileMapLayer" parent="." unique_id=2036991858]
 

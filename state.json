@@ -35,6 +35,22 @@
         "在 BranchEventManager 上接聽 branch_triggered/convergence_reached 訊號，填入分支劇情邏輯",
         "實測四個分支觸發區：玩家走進任一區域後，其他三個應自動鎖定不可觸發"
       ]
+    },
+    {
+      "task_id": "PHASE2-02",
+      "status": "done",
+      "files_changed": [
+        "res://Resources/Levels/LevelData_Sandbox.tres",
+        "res://Scenes/Maps/Map_Level_1_1_Sandbox_Handler.gd",
+        "res://Scenes/Maps/Map_Level_1_1_Sandbox.tscn"
+      ],
+      "summary": "建立 LevelData_Sandbox.tres（map_path 指向沙盒場景，其餘欄位合理預設）；建立 Sandbox_Handler.gd 腳本接聽 BranchEventManager 的 branch_triggered / convergence_reached / combat_phase_started 三個訊號，每個處理函式只放 print + TODO 註解；腳本已掛載到 Map_Level_1_1_Sandbox 根節點",
+      "known_issues": [],
+      "manual_verification_needed": [
+        "_on_branch_triggered(branch_index): 此處需要使用者填入四條分支各自的劇情文本/對話/UI 呈現（branch_index 0=A北, 1=B東, 2=C南, 3=D西）",
+        "_on_convergence_reached(): 此處需要使用者填入收束段落的劇情文本/對話/UI 呈現（警報事件、逃脫段落等）",
+        "_on_combat_phase_started(): 此處需要使用者填入戰鬥階段開始的劇情文本/UI 呈現（戰鬥開始 UI、刷怪啟動、BGM 切換等）"
+      ]
     }
   ]
 }

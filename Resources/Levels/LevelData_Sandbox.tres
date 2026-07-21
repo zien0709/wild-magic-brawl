@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="LevelData" format=3]
+
+[ext_resource type="Script" uid="uid://3p2ctg5iemu1" path="res://Scripts/Resources/LevelData.gd" id="1_uu776"]
+
+[resource]
+script = ExtResource("1_uu776")
+chapter_id = "chapter_1"
+level_id = "level_1_1_sandbox"
+map_path = "res://Scenes/Maps/Map_Level_1_1_Sandbox.tscn"
+mode_type = "FLAG"
+enemy_list = Array[PackedScene]([])
+enemy_count = 0
+max_spawn_count = 0
+challenge_type = 0
+has_time_limit = false
+time_limit_seconds = 120.0
+target_value = 0
+extra_params = {
+	"portal_speed": 200.0,
+	"target_kills": 10
+}
+metadata/_custom_type_script = "uid://3p2ctg5iemu1"
