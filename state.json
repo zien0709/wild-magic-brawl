@@ -82,6 +82,20 @@
       "manual_verification_needed": [
         "在編輯器內執行遊戲，確認遠程怪物開槍頻率明顯比玩家慢（約每 0.8 秒一次而非原本 5 秒或更快）、子彈飛行速度明顯比玩家的慢、傷害維持最低，且刪除 EnemyBullet 相關檔案後專案仍能正常編譯執行"
       ]
+    },
+    {
+      "task_id": "MCP-01",
+      "status": "done",
+      "files_changed": [
+        "res://Scenes/Maps/Map_Level_1_1_Sandbox.tscn"
+      ],
+      "summary": "為 Map_Level_1_1_Sandbox.tscn 的 TileMapLayer_Ground 配置 TileSet（複製自 Map_Level_1_1.tscn 的 TileSetAtlasSource，紋理 res://PNG/rpgTile010.png，4x4 atlas grid，16 tiles，含 physics_layer_0 collision_layer=1）；使用 MCP tilemap_set_cells_rect 鋪設 24x22（528 格）矩形基礎地板，source_id=0, atlas (0,0)，座標範圍 (-12,-11) 到 (11,10)，覆蓋四個 Branch 觸發區與中央收束區域",
+      "known_issues": [
+        "地板為暫時性單一圖磚鋪設（全部使用 atlas 0:0），最終美術風格待使用者決定"
+      ],
+      "manual_verification_needed": [
+        "在編輯器內打開 Map_Level_1_1_Sandbox.tscn，目視確認地板圖磚顯示正常、沒有缺角或錯位，並確認玩家在場景中執行時能正常站在地板上而非掉出邊界"
+      ]
     }
   ]
 }
