@@ -1,18 +1,24 @@
+# res://Entities/Enemy/MindControlComponent.gd
+# [心控元件 / Mind Control Component]
+# 掛載於敵人節點，處理 QTE 結果：完美格擋→心控、良好→定身、失敗→無效。
+# 心控期間敵人改為攻擊其他敵人。
 class_name MindControlComponent
 extends Node2D
-# res://Entities/Enemy/MindControlComponent.gd
 
-@export var control_duration: float = 5.0
-@export var good_stun_duration: float = 2.0
+@export var control_duration: float = 5.0      # 心控持續秒數
+@export var good_stun_duration: float = 2.0   # 定身持續秒數
 
 var is_mind_controlled: bool = false
-var original_modulate: Color = Color.WHITE
+var original_modulate: Color = Color.WHITE     # 原始顏色（用於恢復）
 
-@onready var enemy = get_parent()
+@onready var enemy = get_parent()             # 所屬敵人節點
 
+# 節點就緒（無特殊處理）
 func _ready() -> void:
 	pass
 
+# 接收 QTE 結果並觸發對應效果
+# qte_result = "PERFECT" / "GOOD" / "FAIL"
 func trigger_qte(qte_result: String) -> void:
 	match qte_result:
 		"PERFECT":
@@ -22,6 +28,7 @@ func trigger_qte(qte_result: String) -> void:
 		"FAIL":
 			print("👾 QTE 失敗，怪物未受影響。")
 
+# 開始心控：改變顏色、切換碰撞遮罩、設定計時器
 func start_mind_control() -> void:
 	if not is_instance_valid(enemy):
 		return
@@ -43,6 +50,7 @@ func start_mind_control() -> void:
 	
 	get_tree().create_timer(control_duration).timeout.connect(end_mind_control)
 
+# 定身：暫停移動並變藍色
 func start_stun() -> void:
 	if not is_instance_valid(enemy):
 		return
@@ -58,6 +66,7 @@ func start_stun() -> void:
 			print("🧠 敵人 [", enemy.name, "] 定身解除。")
 	)
 
+# 結束心控：恢復顏色與目標、碰撞遮罩
 func end_mind_control() -> void:
 	if not is_mind_controlled:
 		return
@@ -74,6 +83,7 @@ func end_mind_control() -> void:
 			
 		print("🧠 敵人 [", enemy.name, "] 心控解除，回歸正常。")
 
+# 每幀：心控期間追蹤最近的其他敵人
 func _physics_process(_delta: float) -> void:
 	if is_mind_controlled and is_instance_valid(enemy):
 		var closest = enemy.find_closest_other_enemy()

@@ -1,20 +1,25 @@
 # res://Entities/Combat/WeaponHandler.gd
+# [武器處理器 / Weapon Handler]
+# 掛載於 Player 下，管理武器資料、瞄準、射擊、換彈、冷卻。
+# 由 Player 每幀呼叫 aim_at_position / fire / reload。
 extends Node2D
 
-@export var data: WeaponResource 
-var current_bullets: int
-var can_fire: bool = true
-var is_reloading: bool = false
+@export var data: WeaponResource  # 武器資料資源（.tres）
+var current_bullets: int          # 當前彈匣子彈數
+var can_fire: bool = true         # 是否可射擊（冷卻結束）
+var is_reloading: bool = false    # 是否正在換彈
 
 # 抓取武器圖片節點
 @onready var sprite: Sprite2D = $WeaponSprite
-@onready var timer: Timer = Timer.new()
+@onready var timer: Timer = Timer.new()  # 射擊冷卻計時器（執行期建立）
 
+# 節點就緒：建立計時器子節點，初始化武器
 func _ready():
 	add_child(timer)
 	if data:
 		setup_weapon()
 
+# 初始化武器：設定彈匣數、套用圖片
 func setup_weapon():
 	current_bullets = data.bullet_count
 	
@@ -23,8 +28,8 @@ func setup_weapon():
 		sprite.texture = data.texture
 	print("武器已就緒：", data.name)
 
-# 🎯 [修正] 移除重複的宣告與整個 _process 邏輯
-# 這個函式現在完全交由外面的 player.gd 來呼叫，並傳入不論是鍵鼠還是手把的瞄準點
+# 🎯 瞄準：旋轉武器朝向目標，並依左右翻轉貼圖
+# target_global_pos=目標全域座標
 func aim_at_position(target_global_pos: Vector2) -> void:
 	look_at(target_global_pos)
 	
@@ -34,6 +39,7 @@ func aim_at_position(target_global_pos: Vector2) -> void:
 	else:
 		sprite.flip_v = false
 
+# 換彈：等待 reload_time 後補滿彈匣
 func reload():
 	if is_reloading: 
 		return
@@ -52,7 +58,9 @@ func reload():
 	if hud:
 		hud.update_ammo(current_bullets, "∞")
 
-func fire(target_global_pos: Vector2, pos: Vector2):
+# 射擊：消耗子彈、生成子彈、設定冷卻
+# _target_global_pos=目標座標（保留參數供未來使用）, pos=槍口位置
+func fire(_target_global_pos: Vector2, pos: Vector2):
 	if not can_fire or is_reloading:
 		return
 	if current_bullets <= 0:

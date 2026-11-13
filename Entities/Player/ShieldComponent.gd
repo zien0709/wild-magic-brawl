@@ -1,12 +1,16 @@
+# res://Entities/Player/ShieldComponent.gd
+# [護盾元件 / Shield Component]
+# 管理玩家護盾狀態機：IDLE → PERFECT_WINDOW → ACTIVE → BROKEN_COOLDOWN。
+# 處理舉盾、完美格擋（反傷+眩暈）、一般格擋、破盾冷卻。
 class_name ShieldComponent
 extends Node2D
-# res://Entities/Player/ShieldComponent.gd
 
+# 護盾狀態列舉
 enum ShieldState { IDLE, ACTIVE, PERFECT_WINDOW, BROKEN_COOLDOWN }
 
-@export var perfect_window_ms: int = 150   # 完美格擋容錯窗口
+@export var perfect_window_ms: int = 150   # 完美格擋容錯窗口（毫秒）
 @export var shield_cost: float = 15.0       # 舉盾消耗能量
-@export var broken_cooldown_sec: float = 1.2 # 破盾冷卻時間
+@export var broken_cooldown_sec: float = 1.2 # 破盾冷卻時間（秒）
 
 var current_state: ShieldState = ShieldState.IDLE
 var state_timer: float = 0.0
@@ -14,14 +18,17 @@ var perfect_timer: float = 0.0
 
 @onready var player = get_parent()
 
+# 護盾狀態變更訊號
 signal shield_state_changed(new_state: ShieldState)
 signal perfect_block_triggered(attacker: Node2D)
 signal normal_block_triggered()
 signal shield_broken()
 
+# 節點就緒
 func _ready() -> void:
 	print("🛡️ ShieldComponent ready!")
 
+# 每幀：更新計時器、處理舉盾輸入、放開取消
 func _physics_process(delta: float) -> void:
 	if not player or not player.input_handler:
 		return
@@ -51,10 +58,12 @@ func _physics_process(delta: float) -> void:
 		if not Input.is_action_pressed("ui_protect"):
 			_transition_to(ShieldState.IDLE)
 
+# 開始舉盾：進入完美窗口
 func _start_shielding() -> void:
 	_transition_to(ShieldState.PERFECT_WINDOW)
 	perfect_timer = perfect_window_ms
 
+# 狀態轉移：更新狀態、發訊號、設定視覺
 func _transition_to(new_state: ShieldState) -> void:
 	current_state = new_state
 	shield_state_changed.emit(new_state)
@@ -78,7 +87,8 @@ func _transition_to(new_state: ShieldState) -> void:
 			state_timer = broken_cooldown_sec
 			shield_broken.emit()
 
-# 處理受傷攔截：如果成功格擋則回傳 true，否則回傳 false
+# 處理受傷攔截：成功格擋回傳 true，否則 false
+# damage_amount=傷害值, hitbox=攻擊來源
 func handle_hit(damage_amount: int, hitbox: Area2D) -> bool:
 	if current_state == ShieldState.PERFECT_WINDOW:
 		print("⭐ 觸發完美格擋！")
@@ -100,13 +110,13 @@ func handle_hit(damage_amount: int, hitbox: Area2D) -> bool:
 		return true
 		
 	elif current_state == ShieldState.ACTIVE:
-		print("🛡️ 護盾被擊破！")
+		print("🛡️ 觸發一般格擋！")
 		normal_block_triggered.emit()
-		_transition_to(ShieldState.BROKEN_COOLDOWN)
 		return true
 		
 	elif current_state == ShieldState.BROKEN_COOLDOWN:
 		print("💥 破盾狀態，無法格擋傷害！")
+		_transition_to(ShieldState.BROKEN_COOLDOWN) # 重置冷卻
 		return false
 		
 	return false

@@ -1,6 +1,10 @@
-extends Control
 # res://UI/QTEWidget.gd
+# [QTE 小遊戲元件 / QTE Widget]
+# 繼承 Control，實作指針來回掃描的 QTE 互動：完美/良好/失敗判定，
+# 逾時自動 FAIL。發出 qte_finished(result) 供 MindControlComponent 處理。
+extends Control
 
+# QTE 結果訊號："PERFECT" / "GOOD" / "FAIL"
 signal qte_finished(result: String)
 
 @export var pointer_speed: float = 1.5      # 指針來回一次所需秒數
@@ -8,18 +12,20 @@ signal qte_finished(result: String)
 @export var good_zone_width: float = 0.3     # 成功區間佔總寬比例
 @export var target_center: float = 0.5       # 區間中心點
 
-var current_position: float = 0.0
-var direction: float = 1.0
-var active: bool = true
-var time_limit: float = 2.0                  # 無操作自動 FAIL 時間限制
+var current_position: float = 0.0   # 指針目前位置 (0.0~1.0)
+var direction: float = 1.0         # 移動方向 (+1/-1)
+var active: bool = true            # 是否仍在進行
+var time_limit: float = 2.0        # 無操作自動 FAIL 時間限制
 
 @onready var pointer = $Pointer
 @onready var target_area = $TargetArea
 @onready var perfect_area = $PerfectArea
 
+# 節點就緒：更新區間排版
 func _ready() -> void:
 	_update_zones()
 	
+# 更新目標/完美區間的大小與位置（以 200px 寬為基準）
 func _update_zones():
 	# 基礎排版設定 (假設寬度為 200px)
 	custom_minimum_size = Vector2(200, 30)
@@ -34,13 +40,14 @@ func _update_zones():
 		pa.size.x = 200.0 * perfect_zone_width
 		pa.position.x = 200.0 * (target_center - perfect_zone_width / 2.0)
 
+# 每幀：指針移動、逾時判定、輸入判定
 func _process(delta: float) -> void:
 	if not active:
 		return
 		
 	time_limit -= delta
 	if time_limit <= 0.0:
-		_evaluate_result(true)
+		_evaluate_result(true)   # 逾時自動 FAIL
 		return
 		
 	current_position += direction * (delta / (pointer_speed / 2.0))
@@ -58,6 +65,7 @@ func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("ui_qte"):
 		_evaluate_result(false)
 
+# 判定結果並發出訊號，然後淡出銷毀
 func _evaluate_result(timeout: bool) -> void:
 	active = false
 	var result = "FAIL"
