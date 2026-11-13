@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://bpbmpxi2c3p32"]
+
+[ext_resource type="Script" uid="uid://c4ikjgxdbtuj3" path="res://Entities/Objects/WoodenBox.gd" id="1_e5838"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kpkgj"]
+
+[node name="WoodenBox" type="RigidBody2D" unique_id=819896808 groups=["interactable_objects"]]
+gravity_scale = 0.0
+freeze = true
+linear_damp = 4.0
+script = ExtResource("1_e5838")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1265901729]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1724220823]
+shape = SubResource("RectangleShape2D_kpkgj")
