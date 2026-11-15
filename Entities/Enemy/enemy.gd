@@ -1,38 +1,33 @@
 # res://Entities/Enemy/enemy.gd
+# [敵人控制器 / Enemy Controller]
+# 繼承 CharacterBody2D，負責：追蹤目標（玩家或被心控）、移動、
+# 受傷、死亡廣播（透過 GameEvents）。整合 MindControlComponent。
 extends CharacterBody2D
 
+# 基礎數值（可在編輯器調整）
 @export var base_speed: float = 150.0
 @export var base_max_hp: int = 3
 @export var base_damage: int = 1
 @export var base_exp_reward: int = 20
 
-@export var attack_range: float = 130.0
-@export var windup_time: float = 0.4
-@export var strike_time: float = 0.1
-@export var recovery_time: float = 0.6
+# 建立兩個暫存變數，用來接收 Spawner 傳進來的環境倍率
+var spawner_hp_mult: float = 1.0   # 血量倍率
+var spawner_dmg_mult: float = 1.0  # 攻擊力倍率
 
-enum AttackState { IDLE, WINDUP, STRIKE, RECOVERY }
-var attack_state: AttackState = AttackState.IDLE
-var attack_timer: float = 0.0
+# 目標與元件
+var player = null                  # 玩家節點參考
+var current_target: Node2D = null   # 當前追蹤目標
+var mind_control_component: MindControlComponent  # 心控元件
 
-var spawner_hp_mult: float = 1.0
-var spawner_dmg_mult: float = 1.0
-
-var player = null
-var current_target: Node2D = null
-var mind_control_component: MindControlComponent
-
+# 實際數值（經等級/章節/倍率計算後）
 var speed: float
 var max_hp: int
 var current_hp: int
 var damage: int
 var exp_reward: int 
 
-var original_color: Color = Color(1, 0, 0, 1)
-
+# 節點就緒：找玩家、建立心控元件、計算數值、初始化血條
 func _ready():
-	add_to_group("enemies")
-	
 	player = get_tree().get_first_node_in_group("player")
 	current_target = player
 	
@@ -41,18 +36,14 @@ func _ready():
 	add_child(mind_control_component)
 	
 	scale_monster_stats("chapter_1") 
-
+	
 	current_hp = max_hp
 	if has_node("EnemyHealthBar"):
 		$EnemyHealthBar.max_value = max_hp
 		$EnemyHealthBar.value = current_hp
-	
-	if has_node("Sprite2D"):
-		original_color = $Sprite2D.modulate
-	
-	# 初始化時禁用攻擊盒，等待進入攻擊狀態
-	_set_hitbox_enabled(false)
 
+# 根據章節與玩家等級、Spawner 倍率計算實際數值
+# current_chapter=當前章節 ID
 func scale_monster_stats(current_chapter: String) -> void:
 	var level_modifier: float = 1.0 + (PlayerData.account_level - 1) * 0.1
 	var chapter_modifier: float = 1.0
@@ -61,89 +52,20 @@ func scale_monster_stats(current_chapter: String) -> void:
 	elif current_chapter == "chapter_3":
 		chapter_modifier = 3.5
 		
+	# 完美融合：玩家等級補正 * 章節補正 * Spawner難度注入
 	max_hp = int(base_max_hp * level_modifier * chapter_modifier * spawner_hp_mult)
 	damage = int(base_damage * level_modifier * chapter_modifier * spawner_dmg_mult)
 	exp_reward = int(base_exp_reward * level_modifier) 
 	speed = base_speed
-	if has_node("EnemyHitbox"):
-		$EnemyHitbox.damage = damage
 
-func _physics_process(delta: float) -> void:
-	_update_attack_state(delta)
-	
-	if attack_state != AttackState.IDLE:
-		return
-	
+# 每幀移動：朝 current_target 移動
+func _physics_process(_delta):
 	if current_target and is_instance_valid(current_target):
 		var direction = global_position.direction_to(current_target.global_position)
-		var dist = global_position.distance_to(current_target.global_position)
-		
-		# 心控狀態下，尋找其他敵人
-		if mind_control_component and mind_control_component.is_mind_controlled:
-			current_target = find_closest_other_enemy()
-			if is_instance_valid(current_target):
-				velocity = direction * speed
-				move_and_slide()
-			return
-		
-		# 在攻擊範圍內，開始攻擊
-		if dist <= attack_range:
-			_start_attack()
-		else:
-			velocity = direction * speed
-			move_and_slide()
+		velocity = direction * speed
+		move_and_slide()
 
-func _start_attack() -> void:
-	attack_state = AttackState.WINDUP
-	attack_timer = windup_time
-	velocity = Vector2.ZERO
-
-func _update_attack_state(delta: float) -> void:
-	match attack_state:
-		AttackState.WINDUP:
-			attack_timer -= delta
-			# 前搖視覺：紅色閃爍警告
-			var flash = sin(attack_timer * 25.0) * 0.4
-			if has_node("Sprite2D"):
-				$Sprite2D.modulate = Color(1.0, 0.3 + flash, 0.3 + flash, 1.0)
-			
-			if attack_timer <= 0.0:
-				attack_state = AttackState.STRIKE
-				attack_timer = strike_time
-				_perform_strike()
-				
-		AttackState.STRIKE:
-			attack_timer -= delta
-			# 攻擊中：亮紅色
-			if has_node("Sprite2D"):
-				$Sprite2D.modulate = Color(1.0, 0.1, 0.1, 1.0)
-			
-			if attack_timer <= 0.0:
-				attack_state = AttackState.RECOVERY
-				attack_timer = recovery_time
-				_set_hitbox_enabled(false)
-				
-		AttackState.RECOVERY:
-			attack_timer -= delta
-			# 恢復中：暗紅色
-			if has_node("Sprite2D"):
-				$Sprite2D.modulate = Color(0.6, 0.2, 0.2, 1.0)
-			
-			if attack_timer <= 0.0:
-				attack_state = AttackState.IDLE
-				if has_node("Sprite2D"):
-					$Sprite2D.modulate = original_color
-
-func _perform_strike() -> void:
-	_set_hitbox_enabled(true)
-
-func _set_hitbox_enabled(enabled: bool) -> void:
-	if has_node("EnemyHitbox"):
-		$EnemyHitbox.monitoring = enabled
-		$EnemyHitbox.monitorable = enabled
-		if enabled:
-			$EnemyHitbox.is_spent = false
-
+# 尋找最近的其他敵人（用於心控時切換目標）
 func find_closest_other_enemy() -> CharacterBody2D:
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var closest_enemy = null
@@ -159,6 +81,8 @@ func find_closest_other_enemy() -> CharacterBody2D:
 			closest_enemy = e
 	return closest_enemy
 
+# 受傷回呼：由 EnemyHurtbox.on_hit 觸發
+# damage_amount=傷害值, hitbox=攻擊來源（未使用）
 func _on_enemy_hurtbox_on_hit(damage_amount: int, hitbox: Area2D = null):
 	current_hp -= damage_amount
 	if has_node("EnemyHealthBar"):
@@ -166,6 +90,8 @@ func _on_enemy_hurtbox_on_hit(damage_amount: int, hitbox: Area2D = null):
 	if current_hp <= 0:
 		die()
 		
+# 死亡：透過 GameEvents 廣播經驗值並移除節點
 func die():
+	# 🟢 改為透過全域事件流廣播，不直接依賴外面的 HUD 節點與 PlayerData 腳本
 	GameEvents.enemy_killed.emit(exp_reward)
 	queue_free()

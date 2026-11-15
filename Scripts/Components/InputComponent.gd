@@ -1,28 +1,38 @@
 # res://Scripts/Components/InputComponent.gd
+# [輸入元件 / Input Component]
+# 掛載於 Player 節點下，負責統一收集鍵盤/滑鼠/手把輸入，
+# 並轉換為標準化的移動方向、瞄準位置、按鍵狀態，
+# 供 Player 與 WeaponHandler 等系統讀取（解耦輸入與邏輯）。
 class_name InputComponent
 extends Node
 
-# 供 Player 與 Weapon 讀取的標準接口
+# 供 Player 與 Weapon 讀取的標準接口（移動方向向量）
 var move_direction: Vector2 = Vector2.ZERO
+# 供瞄準系統使用的全域座標（世界座標）
 var aim_position: Vector2 = Vector2.ZERO
-var aim_direction: Vector2 = Vector2.RIGHT # 直接取得當前旋轉/瞄準方向（正規化向量）
+# 直接取得當前旋轉/瞄準方向（正規化向量），避免重複計算
+var aim_direction: Vector2 = Vector2.RIGHT
 
-var is_dashing: bool = false
-var is_shooting: bool = false
-var is_reloading: bool = false
-var is_interacting: bool = false # 企劃書中的 M2 投擲
-var is_protecting: bool = false  # 企劃書中的 Q 護盾
-var is_qte_pressed: bool = false # 企劃書中的 Space QTE 心控
+# 玩家動作狀態旗標（供 Player 狀態機 / 技能系統判斷）
+var is_dashing: bool = false       # 是否正在衝刺
+var is_shooting: bool = false      # 是否按住射擊
+var is_reloading: bool = false     # 是否觸發換彈
+var is_interacting: bool = false   # 企劃書 M2：投擲/互動
+var is_protecting: bool = false    # 企劃書 Q：護盾
+var is_qte_pressed: bool = false   # 企劃書 Space：QTE 心控
 
-@export var joystick_deadzone: float = 0.2
-var last_aim_direction: Vector2 = Vector2.RIGHT
-var is_using_gamepad: bool = false
+@export var joystick_deadzone: float = 0.2   # 搖桿死區（過濾微小飄移）
+var last_aim_direction: Vector2 = Vector2.RIGHT  # 最後一次瞄準方向（手把放開時維持）
+var is_using_gamepad: bool = false               # 目前是否使用手把輸入
 
+# 節點就緒時初始化自訂輸入映射
 func _ready() -> void:
 	_setup_custom_inputs()
 
+# 設定自訂輸入 Action（QTE、互動右鍵），確保鍵盤與手把皆可觸發
 func _setup_custom_inputs():
 	# 1. Setup ui_qte on Space key if it doesn't exist
+	# 建立 QTE 動作：空白鍵（鍵盤）+ Y 按鈕（手把）
 	if not InputMap.has_action("ui_qte"):
 		InputMap.add_action("ui_qte")
 	InputMap.action_erase_events("ui_qte")
@@ -35,6 +45,7 @@ func _setup_custom_inputs():
 	InputMap.action_add_event("ui_qte", controller_qte)
 
 	# 2. Ensure ui_interact is mapped to Right Click (MOUSE_BUTTON_RIGHT)
+	# 互動動作：右鍵（鍵盤/滑鼠）+ RB 肩鍵（手把）
 	if not InputMap.has_action("ui_interact"):
 		InputMap.add_action("ui_interact")
 	InputMap.action_erase_events("ui_interact")
@@ -46,28 +57,30 @@ func _setup_custom_inputs():
 	controller_rb.button_index = JOY_BUTTON_RIGHT_SHOULDER
 	InputMap.action_add_event("ui_interact", controller_rb)
 
+# 輸入事件回呼：偵測輸入裝置類型，自動切換鍵鼠/手把模式
 func _input(event: InputEvent) -> void:
 	# 偵測到鍵盤按鍵、滑鼠點擊、滑鼠移動 -> 切換到鍵鼠模式
 	if event is InputEventKey or event is InputEventMouseButton or event is InputEventMouseMotion:
 		is_using_gamepad = false
 	# 偵測到手把按鈕、搖桿推動 -> 切換到手把模式
 	elif event is InputEventJoypadButton or event is InputEventJoypadMotion:
-		# 濾掉搖桿極輕微的飄移（死區），避免搖桿自然放開時的細微晃動誤觸手把模式
+		# 濾掉搖桿極輕微的飄移（死區），避免自然放開時的細微晃動誤觸手把模式
 		if event is InputEventJoypadMotion and abs(event.axis_value) < joystick_deadzone:
 			return
 		is_using_gamepad = true
 
+# 每幀更新輸入狀態（由 Player._process 呼叫）
 func update_input() -> void:
 	var player = get_parent() as Node2D
-	if not player: return
+	if not player: return   # 防呆：無父節點則不處理
 
-	# 1. 處理移動（左搖桿 或 WASD，在專案設定綁定同一個 Action）
+	# 1. 處理移動（左搖桿 或 WASD，專案設定綁定同一個 Action）
 	move_direction = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
 
 	# 2. 處理瞄準方向
 	var joystick_dir = Input.get_vector("look_left", "look_right", "look_up", "look_down")
 	if is_using_gamepad:
-		# 🎮 手把模式
+		# 🎮 手把模式：用右搖桿決定瞄準方向
 		if joystick_dir.length() > joystick_deadzone:
 			aim_direction = joystick_dir.normalized()
 			last_aim_direction = aim_direction
@@ -82,7 +95,7 @@ func update_input() -> void:
 		aim_position = player.get_global_mouse_position()
 		aim_direction = (aim_position - player.global_position).normalized()
 
-	# 3. 讀取按鍵（完全對應你的遊戲企劃書設定）
+	# 3. 讀取按鍵（完全對應遊戲企劃書設定）
 	is_dashing = Input.is_action_just_pressed("ui_dash")          # 鍵盤 Shift / 手把 A
 	is_reloading = Input.is_action_just_pressed("ui_reload")      # 鍵盤 R / 手把 X
 	is_interacting = Input.is_action_just_pressed("ui_interact")  # 鍵盤 M2 右鍵 / 手把 RB

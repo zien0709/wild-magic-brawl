@@ -1,39 +1,54 @@
-# player.gd
+# res://Entities/Player/player.gd
+# [玩家角色控制器 / Player Controller]
+# 繼承 CharacterBody2D，負責：移動、衝刺、射擊、換彈、QTE 心控、
+# 投擲/抓取物件、受傷與死亡。整合 InputComponent、EnergyResource、
+# ShieldComponent、ThrowAimComponent 等子系統。
 extends CharacterBody2D
-var input_handler: InputComponent
-# 📣 定義訊號：當血量或能量改變時，通知任何想聽的 UI
+
+# === 訊號定義 ===
+# health_changed：血量改變時通知 HUD
+# energy_changed：能量改變時通知 HUD
 signal health_changed(current: int, max_hp: int)
 signal energy_changed(current: float, max_energy: float)
 
-@onready var weapon = $WeaponHandler # 確保節點路徑正確
-@export var speed: float = 300.0 
-@export var max_hp: int = 10     # 最大血量（可以由右邊屬性面板直接改）
+@onready var weapon = $WeaponHandler # 武器處理節點（路徑必須正確）
+@export var speed: float = 300.0
+@export var max_hp: int = 10     # 最大血量（可在編輯器調整）
 var current_hp: int = 0         # 當前血量
 
-# === 🌪️ Cril 加速瞬移系統變數 ===
+# === 🌪️ Cril 加速瞬移（衝刺）系統變數 ===
 @export var max_energy: float = 100.0
 @export var dash_energy_cost: float = 30.0  # 每次閃避消耗的固定能量
-@export var dash_duration: float = 0.58
+@export var dash_duration: float = 0.58     # 衝刺持續時間（秒）
+@export var shoot_energy_cost: float = 5.0  # 每次射擊消耗的能量
 @export var qte_energy_cost: float = 20.0   # 每次 QTE 心控消耗的能量
 
+# 能量資源實例（執行期建立）
 var energy: EnergyResource
+# 護盾元件（執行期建立）
 var shield_component: ShieldComponent
+# 磁吸瞄準元件（執行期建立）
 var throw_aim_component: ThrowAimComponent
 
+# 移動速度
 @export var normal_speed: float = 200.0  # 正常走路速度
-@export var dash_speed: float = 600.0    # 衝鋒瘋狂速度
+@export var dash_speed: float = 600.0    # 衝刺瘋狂速度
 
+# 衝刺狀態
 var dash_time_left: float = 0.0             # 衝刺剩餘時間倒數
 var dash_direction: Vector2 = Vector2.ZERO  # 鎖定衝刺時的方向
+var is_dashing: bool = false                # 是否正在衝刺
 
-var is_dashing: bool = false
-
+# 抓取的物件（RigidBody2D）
 var grabbed_object: RigidBody2D = null
 
+# 受傷盒節點
 @onready var hurtbox = $PlayerHurtbox
 
-const HUD_SCENE = preload("res://Scenes/UI/GameHUD.tscn")
+# 輸入處理器（可由外部注入，否則預設鍵盤）
+var input_handler: InputComponent
 
+# 節點就緒：初始化血量、輸入、能量、護盾、瞄準、事件綁定
 func _ready():
 	current_hp = max_hp         # 遊戲一開始，把血量補滿
 	# 🟢 核心防呆：如果沒有從外部注入控制器，預設給他鍵盤控制器
@@ -46,6 +61,7 @@ func _ready():
 	energy.max_energy = max_energy
 	energy.current_energy = max_energy
 	
+	# 根據天賦設定能量回復速率
 	if PlayerData.talents.get("energy_regen_up", false) == true:
 		energy.regen_rate = 30.0
 	else:
@@ -61,7 +77,7 @@ func _ready():
 	throw_aim_component.name = "ThrowAimComponent"
 	add_child(throw_aim_component)
 		
-	# 監聽能量變化並轉發
+	# 監聽能量變化並轉發給 HUD
 	energy.energy_changed.connect(func(curr, mx):
 		energy_changed.emit(curr, mx)
 	)
@@ -75,20 +91,14 @@ func _ready():
 		# TODO: 觸發音效或 UI 閃紅等拒絕回饋
 	)
 	
+	# 發出初始數值
 	health_changed.emit(current_hp, max_hp)
 	energy_changed.emit(energy.current_energy, energy.max_energy)
-	
-	_load_hud()
 
-func _load_hud():
-	if get_tree().current_scene == null:
-		return
-	if get_tree().get_first_node_in_group("hud") != null:
-		return
-	var hud = HUD_SCENE.instantiate()
-	get_tree().current_scene.add_child.call_deferred(hud)
-
+# 受傷回呼：由 PlayerHurtbox.on_hit 觸發
+# damage_amount=傷害值, hitbox=攻擊來源
 func _on_player_hurtbox_on_hit(damage_amount: int, hitbox: Area2D = null):
+	# 護盾優先處理（完美反彈/格擋）
 	if shield_component and shield_component.handle_hit(damage_amount, hitbox):
 		return
 	current_hp -= damage_amount
@@ -97,6 +107,7 @@ func _on_player_hurtbox_on_hit(damage_amount: int, hitbox: Area2D = null):
 	if current_hp <= 0:
 		die()
 
+# 每幀物理更新：輸入、衝刺、移動、射擊、瞄準、shader 參數
 func _physics_process(delta):
 	if not input_handler: return
 	
@@ -109,7 +120,7 @@ func _physics_process(delta):
 		if dash_time_left <= 0:
 			end_dash()
 	else:
-		energy.regen(delta)
+		energy.regen(delta)   # 非衝刺時自然回復能量
 	
 	if input_handler.is_dashing:
 		if energy.try_spend(dash_energy_cost, "dash"):
@@ -133,11 +144,9 @@ func _physics_process(delta):
 			grabbed_object.throw(throw_dir)
 			grabbed_object = null
 
+	# 移動
 	var current_speed = dash_speed if is_dashing else normal_speed
-	if is_dashing:
-		velocity = dash_direction * current_speed
-	else:
-		velocity = input_handler.move_direction * current_speed
+	velocity = input_handler.move_direction * current_speed
 	move_and_slide()
 
 	# 🛠️ [重構] 處理武器瞄準與開火
@@ -150,15 +159,18 @@ func _physics_process(delta):
 			var muzzle_pos = muzzle.global_position if muzzle else global_position
 			
 			if weapon.can_fire and not weapon.is_reloading and weapon.current_bullets > 0:
-				weapon.fire(input_handler.aim_position, muzzle_pos)
+				if energy.try_spend(shoot_energy_cost, "shoot"):
+					weapon.fire(input_handler.aim_position, muzzle_pos)
 			elif weapon.current_bullets <= 0 and not weapon.is_reloading:
 				weapon.reload()
 			
 		if input_handler.is_reloading:
 			weapon.reload()
 			
+	# 更新 shader 全域參數（供草 shader 使用）
 	RenderingServer.global_shader_parameter_set("player_position", global_position)
 	
+# 開始衝刺：鎖定方向、加速、開啟無敵
 func start_dash():
 	is_dashing = true
 	dash_time_left = dash_duration  # 重設倒數時間
@@ -172,23 +184,24 @@ func start_dash():
 	modulate = Color(1, 2, 2, 0.6) # 讓玩家角色變亮、變透明（很有特效感！）
 	
 	# 🔴 核心防呆：關掉受傷盒的監聽，達成「絕對無敵」！
-
 	hurtbox.set_deferred("monitoring", false)   # 玩家不再偵測怪物攻擊
 	hurtbox.set_deferred("monitorable", false)  # 怪物攻擊也穿透玩家、偵測不到玩家
 	set_collision_mask_value(7, false)
 	set_collision_layer_value(2, false)
+
 # === 🛑 結束 Cril 加速瞬移 ===
+# 結束衝刺：恢復狀態與碰撞
 func end_dash():
 	is_dashing = false
 	modulate = Color(1, 1, 1, 1) # 恢復正常顏色
 	
-
 	# 🔴 恢復正常：重新打開受傷盒，讓玩家可以再次被怪打到
 	hurtbox.set_deferred("monitoring", true)
 	hurtbox.set_deferred("monitorable", true)
 	set_collision_mask_value(7, true)
 	set_collision_layer_value(2, true)
 	
+# 嘗試抓取可互動物件（TelekinesisZone 範圍內最近的）
 func _try_grab_object():
 	var bodies = $TelekinesisZone.get_overlapping_bodies()
 	var closest_dist = INF
@@ -202,11 +215,13 @@ func _try_grab_object():
 				
 	if grabbed_object:
 		grabbed_object.grab(self) # 把自己(玩家)傳過去當作吸引目標
-	
+
+# 玩家死亡：印出訊息並移除節點
 func die():
 	print("玩家死亡！")
 	queue_free()
 
+# 取得 QTE 鎖定範圍內最近的敵人（排除已心控的）
 func _get_qte_target_enemy() -> CharacterBody2D:
 	var enemies = get_tree().get_nodes_in_group("enemies")
 	var closest_enemy = null
@@ -223,6 +238,7 @@ func _get_qte_target_enemy() -> CharacterBody2D:
 			
 	return closest_enemy
 
+# 啟動 QTE 小遊戲：載入 QTEWidget 並加入 HUD
 func _start_qte(target_enemy: CharacterBody2D) -> void:
 	var qte_scene = load("res://UI/QTEWidget.tscn")
 	if qte_scene:

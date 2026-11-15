@@ -1,14 +1,19 @@
-# Hurtbox.gd
+# res://Entities/Combat/Hurtbox.gd
+# [受傷盒 / Hurtbox]
+# 繼承 Area2D，代表可被攻擊的區域（玩家/敵人）。
+# 當 Hitbox 進入時，發出 on_hit 訊號通知主人處理傷害。
 class_name Hurtbox
 extends Area2D
 
 # 這裡用一個訊號，當被打中時，通知主人（玩家或怪物）
 signal on_hit(damage_amount: int, hitbox: Area2D) # 🟢 調整為合規的小寫格式並新增 hitbox 參數
 
+# 節點就緒：綁定 area_entered 事件
 func _ready():
 	# 自己綁定：當有別的 Area2D (必須是 Hitbox) 進入我的範圍時
 	area_entered.connect(_on_area_entered)
 
+# 處理進入的 Hitbox：防重複扣血 + 發出 on_hit
 func _on_area_entered(area: Area2D):
 	if area is Hitbox:
 		# 🟢 檢查進入的 Hitbox 是否有「已被標記失效」的屬性

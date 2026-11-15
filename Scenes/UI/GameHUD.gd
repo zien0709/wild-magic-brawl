@@ -1,17 +1,22 @@
-#res://Scenes/UI/GameHUD.gd
+# res://Scenes/UI/GameHUD.gd
+# [戰鬥 HUD / Game HUD]
+# 繼承 CanvasLayer，負責血量/能量/彈藥顯示與通知訊息佇列。
+# 透過 Group 自動尋找玩家並綁定訊號。
 extends CanvasLayer
 
-
-@onready var health_bar = $PlayerHealthBar 
-@onready var energy_bar = $DashEnergyBar  
+# 🎯 用你的實際節點路徑（請根據編輯器右側微調）
+@onready var health_bar = $PlayerHealthBar  # 如果你的名字叫 HealthBar 就改成 $HealthBar
+@onready var energy_bar = $DashEnergyBar  # 如果名字叫 EnergyBar 就改成 $EnergyBar
 @onready var ammo_label: Label = $RightTopContainer/WeaponHUD/HBoxContainer/AmmoLabel
 @onready var weapon_icon: TextureRect = $RightTopContainer/WeaponHUD/HBoxContainer/WeaponIcon
 @onready var notification_box: VBoxContainer = $LeftTopContainer/NotificationBox
+
 # --- 新增控制佇列的變數 ---
 var notification_queue: Array = []  # 存放等待顯示的訊息佇列
 var is_processing_queue: bool = false  # 記錄目前是否正在播放訊息
 const MSG_INTERVAL: float = 0.3  # 每條訊息跳出來的間隔時間（秒）
 
+# 節點就緒：加入 hud 群組、清空通知欄、綁定玩家訊號、同步武器圖示
 func _ready() -> void:
 	add_to_group("hud")
 	# 剛進入遊戲時，先把通知欄清空
@@ -24,14 +29,12 @@ func _ready() -> void:
 	var player = get_tree().get_first_node_in_group("player")
 	
 	if player:
-		
 		player.health_changed.connect(_on_player_health_changed)
 		player.energy_changed.connect(_on_player_energy_changed)
 		_on_player_health_changed(player.current_hp, player.max_hp)
 		_on_player_energy_changed(player.energy.current_energy, player.energy.max_energy)
 		
 		print("✅ HUD 初始化成功，已主動同步初始血量（", player.current_hp, "/", player.max_hp, "）")
-
 	else:
 		print("❌ HUD 找不到玩家，請檢查 Player 節點是否有加入 'player' 群組")
 	if player and player.has_node("WeaponHandler"):
@@ -47,19 +50,20 @@ func _ready() -> void:
 			
 			# 初始子彈數更新
 			update_ammo(weapon_handler.current_bullets, "∞")
-	
 
-# 🩸 當玩家發射 health_changed 訊號時，會自動執行這裡
+# 🩸 當玩家發射 health_changed 訊號時，自動執行
+# current=當前血量, max_hp=最大血量
 func _on_player_health_changed(current: int, max_hp: int):
 	if health_bar:
 		health_bar.max_value = max_hp
 		health_bar.value = current
 
-# ⚡ 當玩家發射 energy_changed 訊號時，會自動執行這裡
+# ⚡ 當玩家發射 energy_changed 訊號時，自動執行
 func _on_player_energy_changed(current: float, max_energy: float):
 	if energy_bar:
 		energy_bar.max_value = max_energy
 		energy_bar.value = current
+
 # 🔄 更新子彈 UI 的函式 (供玩家或武器腳本呼叫)
 func update_ammo(current: int, reserve: String) -> void:
 	ammo_label.text = str(current) + " / " + reserve
@@ -85,7 +89,7 @@ func _process_notification_queue() -> void:
 	# 取出隊伍最前面的訊息
 	var current_msg = notification_queue.pop_front()
 	
-	# 3. 動態建立文字標籤（原本的邏輯）
+	# 3. 動態建立文字標籤
 	var new_label = Label.new()
 	new_label.text = current_msg["text"]
 	new_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -93,7 +97,7 @@ func _process_notification_queue() -> void:
 	
 	notification_box.add_child(new_label)
 	
-	# 4. Tween 動畫（原本的邏輯）
+	# 4. Tween 動畫
 	var tween = create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(new_label, "position:y", new_label.position.y - 30, 1.6).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)

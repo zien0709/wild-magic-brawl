@@ -1,22 +1,26 @@
+# res://Entities/Player/ThrowAimComponent.gd
+# [磁吸瞄準元件 / Throw Aim Component]
+# 負責在未抓取物件時，將瞄準點吸附到最近的可丟擲物上（權重優先、距離次之）。
 class_name ThrowAimComponent
 extends Node2D
-# res://Entities/Player/ThrowAimComponent.gd
 
-@export var snap_radius: float = 120.0 # 磁吸範圍半徑 (像素)
+@export var snap_radius: float = 120.0 # 磁吸範圍半徑（像素）
 
 @onready var player = get_parent()
 
+# 每幀：未抓取時執行磁吸鎖定
 func _physics_process(_delta: float) -> void:
 	if not player or not player.input_handler:
 		return
 		
-	# 僅在玩家按住互動鍵且未抓取物件時，磁吸鎖定可丟擲物
-	if player.input_handler.is_interacting and player.grabbed_object == null:
+	# 僅在玩家未抓取物件時，磁吸鎖定可丟擲物
+	if player.grabbed_object == null:
 		var target = get_best_throwable_target()
 		if target:
 			# 將虛擬瞄準點吸附到目標物件上
 			player.input_handler.aim_position = target.global_position
 
+# 尋找最佳可丟擲目標（權重高優先，權重相同距離近優先）
 func get_best_throwable_target() -> ThrowableBase:
 	var aim_pos = player.input_handler.aim_position
 	var objects = get_tree().get_nodes_in_group("interactable_objects")

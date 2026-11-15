@@ -1,19 +1,23 @@
 # res://Core/LevelManager.gd
-# [AutoLoad] 唯一的全域關卡組裝中心
+# [AutoLoad 全域關卡組裝中心 / Level Manager]
+# 本模組為全域單例，負責：卸載舊場景、載入並實例化地圖、
+# 生成玩家、建立刷怪計時器、組裝模式大腦（Flag/Portal）、疊加 HUD。
 extends Node
 
 # 預載戰鬥 UI，待會地圖載入成功後要疊加在畫面上
 var hud_scene: PackedScene = preload("res://Scenes/UI/GameHUD.tscn")
+# 預載玩家場景
 var player_scene: PackedScene = preload("res://Entities/Player/Player.tscn")
 
-
+# 當前已生成的怪物數量（用於上限控管）
 var current_spawned_count: int = 0
 
-
+# 節點就緒：綁定全域擊殺訊號
 func _ready():
 	if GameEvents.has_signal("enemy_killed"):
 		GameEvents.enemy_killed.connect(_on_global_enemy_killed)
 
+# 全域擊殺回呼：給予玩家經驗值，並通知 HUD 顯示擊殺訊息
 func _on_global_enemy_killed(xp: int):
 	PlayerData.gain_exp(xp)
 	# 動態尋找場上的 HUD 並發送擊殺通知
@@ -22,6 +26,7 @@ func _on_global_enemy_killed(xp: int):
 		hud.show_notification("⚔️ 擊殺怪物! EXP +" + str(xp), Color.YELLOW)
 
 ## 核心組裝函式：負責卸載舊場景，注入新關卡
+# level_data = 本關的 LevelData 設定
 func load_career_level(level_data: LevelData) -> void:
 	# ---- 步驟 1：安全防呆檢查（必須放在最前面） ----
 	if level_data == null:
@@ -32,12 +37,17 @@ func load_career_level(level_data: LevelData) -> void:
 		push_error("❌ [LevelManager] 錯誤：LevelData 內未指定地圖場景路徑 (map_path)")
 		return
 
+	# 確保不在場景樹建立子節點的過程中執行，避免 "Parent node is busy" 錯誤
+	if get_tree() != null:
+		await get_tree().process_frame
+
 	print("🎬 開始清空當前場景（如主選單）...")
 	
 	# ---- 步驟 2：清理舊世界（將當前主場景移出記憶體） ----
 	var current_scene = get_tree().current_scene
 	if current_scene:
 		current_scene.queue_free()
+		await get_tree().process_frame
 
 	# ---- 步驟 3：載入並實例化純地圖 ----
 	var map_resource = load(level_data.map_path)
@@ -46,9 +56,6 @@ func load_career_level(level_data: LevelData) -> void:
 		return
 		
 	var map_instance = map_resource.instantiate()
-	if not map_instance:
-		push_error("❌ 錯誤：地圖實例化失敗！路徑：" + level_data.map_path)
-		return
 	get_tree().root.add_child(map_instance)
 	get_tree().current_scene = map_instance  # 設定為當前主場景
 	print("🗺️ 地圖載入成功：" + level_data.map_path)
@@ -59,7 +66,7 @@ func load_career_level(level_data: LevelData) -> void:
 	# ---- 步驟 4：動態創建專屬的刷怪計時器（注入到地圖下） ----
 	var spawn_timer = Timer.new()
 	spawn_timer.name = "DynamicSpawnTimer"
-	spawn_timer.wait_time = 2.0  # 刷怪間隔秒數（可改成隨你高興的時間）
+	spawn_timer.wait_time = 2.0  # 刷怪間隔秒數
 	spawn_timer.one_shot = false # 循環觸發
 	
 	# 透過 Lambda 綁定超時訊號，並將必要的資料傳進去
@@ -90,11 +97,11 @@ func load_career_level(level_data: LevelData) -> void:
 	var handler: BaseModeHandler = null
 
 	match level_data.mode_type:
-		"FLAG":
+		"FLAG":      # 旗幟/成就挑戰模式
 			handler = FlagModeHandler.new()
-		"PORTAL":
+		"PORTAL":    # 傳送門三階段模式
 			handler = PortalModeHandler.new()
-		_:
+		_:           # 未知模式 → 沙盒自由探索
 			print("⚠️ 未知模式，本關將作為沙盒自由探索。")
 
 	# 如果有建立模式大腦，將其作為子節點掛在地圖下運作，並初始化
@@ -108,13 +115,15 @@ func load_career_level(level_data: LevelData) -> void:
 		var hud_instance = hud_scene.instantiate()
 		map_instance.add_child(hud_instance)
 		print("📊 戰鬥 HUD 介面疊加完成！")
+
+# 刷怪計時器超時回呼：隨機生成敵人
+# level_data=關卡設定, map_node=地圖根節點
 func _on_spawn_timer_timeout(level_data: LevelData, map_node: Node2D):
 	# 安全機制：如果地圖或設定檔意外失效，就停止
 	if not is_instance_valid(map_node) or level_data.enemy_list.is_empty():
 		return
 		
 	# 檢查目前場上的怪物數量，避免無限複製導致電腦卡死
-
 	var current_enemies = get_tree().get_nodes_in_group("enemies")
 	if current_enemies.size() >= level_data.max_spawn_count:
 		print("⚠️ 場上怪物已達上限 (", level_data.max_spawn_count, ")，本次暫停生成")
@@ -132,7 +141,6 @@ func _on_spawn_timer_timeout(level_data: LevelData, map_node: Node2D):
 		var player = get_tree().get_first_node_in_group("player")
 		var spawn_pos = Vector2.ZERO
 		# 計算怪物的生成位置（此處示範：隨機在畫面上某個範圍生成）
-		# 實戰中你可以依據玩家目前的位置 (PlayerData) 加上一個偏移量，讓怪在玩家畫面外生成
 		if player and is_instance_valid(player):
 			# 圍繞玩家隨機旋轉一個角度，延伸 550 ~ 750 像素（剛好在標準螢幕視野外）
 			var random_angle = randf() * TAU

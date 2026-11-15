@@ -1,29 +1,15 @@
-# MainMenu.gd
+# res://Scenes/Menus/Main_Menu.gd
+# [主選單 / Main Menu]
+# 繼承 Control，提供開始/離開遊戲按鈕。
 extends Control
 
-var talent_tree_instance: Control = null
-
+# 當點擊「開始遊戲」時觸發：載入第一關
 func _on_start_button_pressed() -> void:
 	print("🚀 冒險開始！載入遊戲世界...")
+	# 這裡就是「載入地圖與遊戲」的關鍵時機！
 	LevelManager.load_career_level(load("res://Resources/Levels/Level_1_1.tres"))
 
-func _on_talent_button_pressed() -> void:
-	if talent_tree_instance:
-		talent_tree_instance.queue_free()
-		talent_tree_instance = null
-		return
-	var tscn = load("res://Scenes/UI/TalentTreeUI.tscn")
-	if not tscn:
-		return
-	talent_tree_instance = tscn.instantiate()
-	talent_tree_instance.talent_resources = [
-		load("res://Resources/Talents/bullet_pierce.tres"),
-		load("res://Resources/Talents/energy_regen_up.tres"),
-		load("res://Resources/Talents/shield_hp.tres")
-	]
-	add_child(talent_tree_instance)
-	talent_tree_instance.position = (get_viewport_rect().size - talent_tree_instance.size) / 2
-
+# 當點擊「離開遊戲」時觸發
 func _on_quit_button_pressed() -> void:
 	print("🚪 關閉遊戲。")
-	get_tree().quit()
+	get_tree().quit() # 關閉遊戲程式
